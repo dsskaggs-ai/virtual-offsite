@@ -1,0 +1,11 @@
+node_modules/
+.vercel/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+__pycache__/
+dist/
+test-results/
+playwright-report/

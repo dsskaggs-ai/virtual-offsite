@@ -1,0 +1,257 @@
+.tour-card .tour-h{font-family:var(--f-display,inherit);font-weight:var(--d-wt,700);font-size:1.18rem;line-height:1.22;margin:.3rem 0 .55rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.tour-card .tour-b p,.tour-card .tour-b li{margin:0 0 .5rem;color:var(--ink2);font-size:.92rem;line-height:1.45;font-weight:400}
+.tour-card .tour-b ul{margin:0 0 .5rem;padding-left:1.1rem;list-style:disc}
+.tour-card .tour-b li::marker{color:var(--accent)}
+.tour-card .tour-b li{margin:0 0 .25rem}
+.tour-dots{display:flex;gap:.3rem;margin:.55rem 0 .2rem}
+.tour-dots i{width:.42rem;height:.42rem;border-radius:50%;background:var(--line2,var(--line))}
+.tour-dots i.on{background:var(--accent)}
+.tour-actions{display:flex;align-items:center;gap:.5rem;margin-top:.7rem}
+.tour-actions .tour-skip{margin-right:auto;color:var(--ink3);padding-left:0}
+.tour-actions .btn{padding:.42rem .85rem;font-size:.84rem}
+.tour.still .tour-hole,.tour.still .tour-card{transition:none}
+@media (prefers-reduced-motion:reduce){.tour-hole,.tour-card{transition:none}}
+</style>
+
+<div class="app" id="app" data-pane="stage">
+  <header class="top">
+    <div class="brand"><div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5l7 7-7 7"/><path d="M12 5l7 7-7 7"/></svg></div><div class="name"><b id="brandTitle">Meeting</b><span id="brandSub"></span></div></div>
+    <nav class="panes" aria-label="Panels">
+      <button class="btn sm" data-pane="agenda" type="button">Agenda</button>
+      <button class="btn sm on" data-pane="stage" type="button">Stage</button>
+      <button class="btn sm" data-pane="log" type="button">Log</button>
+    </nav>
+    <div class="tools">
+      <label class="who-sel" id="whoWrap">Typing as <select id="whoSel" aria-label="Who is typing"></select></label>
+      <div class="react" id="react" role="group" aria-label="Reactions"></div>
+      <div class="here" id="here" aria-label="Who is here"></div>
+      <button class="btn sm" id="followBtn" type="button" hidden></button>
+      <button class="btn sm" id="saveBtn" type="button" hidden>Save record</button>
+      <button class="btn sm" id="nextBtn" type="button" hidden>Next session</button>
+      <button class="btn sm" id="shareBtn" type="button" hidden>Room code</button>
+      <button class="btn sm" id="helpBtn" type="button" aria-label="Show the tutorial">Tutorial</button>
+      <button class="btn sm" id="themeBtn" type="button" aria-label="Color theme">Theme: Auto</button>
+      <button class="btn sm" id="bigBtn" type="button" aria-pressed="false">Large text</button>
+      <button class="btn sm" id="focusBtn" type="button" aria-pressed="false">Focus</button>
+    </div>
+  </header>
+  <aside class="rail rail-l" aria-label="Agenda">
+    <div class="agenda" id="agenda"></div>
+    <div class="prog" id="prog"></div>
+  </aside>
+  <main class="stage" id="stage"><div class="stage-in"><div class="empty">Connecting to the room...</div></div></main>
+  <aside class="rail rail-r" aria-label="Decision log" id="logRail"></aside>
+</div>
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* ============================ room configuration, injected by the server as window.__HOST ============================ */
+var HOST=window.__HOST||{role:'member',rid:'local',who:'',room:{title:'Meeting',tname:'Meeting',look:'field',theme:'light',tz:'America/Chicago',start:'09:00',dates:[],opts:{},sess:1,recurring:false,people:[{n:'Guest',lead:true}],checks:[],days:[{label:'Meeting',items:[{id:'open',title:'Open',mins:30,out:'Start here.',pts:[],tools:[]}]}]}};
+var ROOM=HOST.room,RID=HOST.rid||'local',LS='lr.'+RID+'.';
+var TZ=ROOM.tz||'America/Chicago';
+var ROSTER=(ROOM.people||[]).map(function(p){return p.n});
+var COLS=['live','notes','ideas','votes','cards','rocks','targets','commits','decisions','forms','links','signoff','issues','todos','metrics','ratings','updates'];
+var GATE_ALL=['owner','finish','leading','source','tradeoff'];
+var GATE_LABELS={owner:'at least one owner',finish:'finish line',leading:'leading indicator',source:'data source',tradeoff:'tradeoff'};
+
+/* the agenda: scenes carry minutes, and start and end times are worked out here from the start time */
+var DAYS={},DATES={},BREAKS=[],SCENES=[],DAYLIST=[];
+function hhmm(m){m=((m%1440)+1440)%1440;var a=Math.floor(m/60),b=m%60;return (a<10?'0':'')+a+':'+(b<10?'0':'')+b}
+function dayLong(d){try{return new Date(d+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'})}catch(e){return d}}
+(function(){
+  (ROOM.days||[]).forEach(function(d,di){
+    var day=di+1,date=(ROOM.dates||[])[di]||'';
+    DAYLIST.push(day);DAYS[day]=d.label+(date?' · '+dayLong(date):'');
+    if(date)DATES[date]=day;
+    var t=mins(ROOM.start||'09:00');
+    d.items.forEach(function(it){
+      var s=t,e=t+it.mins;t=e;
+      if(it.brk){BREAKS.push({day:day,s:hhmm(s),e:hhmm(e),l:it.brk});return}
+      var sc={};Object.keys(it).forEach(function(k){sc[k]=it[k]});sc.day=day;sc.s=hhmm(s);sc.e=hhmm(e);sc.pts=sc.pts||[];sc.tools=sc.tools||[];SCENES.push(sc);
+    });
+  });
+})();
+var SCENE={};SCENES.forEach(function(s){SCENE[s.id]=s});
+function findTool(k,pred){
+  for(var i=0;i<SCENES.length;i++)for(var j=0;j<SCENES[i].tools.length;j++){var t=SCENES[i].tools[j];if(t.k===k&&(!pred||pred(t)))return t}
+  return null;
+}
+function allTools(k){var o=[];SCENES.forEach(function(sc){sc.tools.forEach(function(t){if(!k||t.k===k)o.push({t:t,sc:sc})})});return o}
+
+/* ============================ first-login tour engine ============================
+   Shared by the room and by the organizer console (tools/build-app.py puts this file in both).
+   Tour.start({key, steps, force, onStep, onEnd})
+     step: { sel, title, body: [lines], opt, before }
+       sel     CSS selector of the thing to point at. No selector, or an element that is not on screen, shows a centered card.
+       body    array of lines. A line that starts with "- " becomes a bullet.
+       opt     drop the step when the element is missing or hidden
+       before  function to run before the step is measured (switch a pane, scroll a list)
+   The tour shows once per browser per key. Tour.seen(key) says whether it has. Tour.start({force:true}) replays it.
+   Storage is optional. If the browser refuses it, the tour just shows each time. */
+var Tour=(function(){
+  var run=null,KEYP='mr.tour.',KEYS='.v1';
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  function seen(key){return !!store(KEYP+key+KEYS)}
+  function mk(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+  function onScreen(el){if(!el||el.hidden)return false;var r=el.getBoundingClientRect();return r.width>2&&r.height>2}
+  function reduce(){try{return window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
+  function stop(){
+    if(!run)return;var r=run;run=null;
+    document.removeEventListener('keydown',r.keys,true);window.removeEventListener('resize',r.place);window.removeEventListener('scroll',r.place,true);
+    r.root.remove();
+    try{if(r.prev&&r.prev.focus&&document.contains(r.prev))r.prev.focus()}catch(e){}
+    if(r.o.onEnd){try{r.o.onEnd()}catch(e){}}
+  }
+  function start(o){
+    if(run)return false;
+    if(!o.force&&seen(o.key))return false;
+    var steps=(o.steps||[]).filter(function(s){if(!s.opt)return true;var el=s.sel&&document.querySelector(s.sel);return !!el&&!el.hidden});
+    if(!steps.length)return false;
+    store(KEYP+o.key+KEYS,String(Date.now()));
+    var i=0,root=mk('div','tour'),shade=mk('div','tour-shade'),hole=mk('div','tour-hole'),card=mk('div','tour-card');
+    var tk=mk('div','tk'),title=mk('h2','tour-h'),body=mk('div','tour-b'),dots=mk('div','tour-dots'),acts=mk('div','tour-actions');
+    var uid='tour'+Math.floor(Math.random()*1e6);
+    title.id=uid+'t';body.id=uid+'b';
+    card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-labelledby',title.id);card.setAttribute('aria-describedby',body.id);card.tabIndex=-1;
+    var skip=mk('button','btn link tour-skip','Skip tour'),back=mk('button','btn','Back'),next=mk('button','btn pri','Next');
+    skip.type=back.type=next.type='button';
+    acts.append(skip,back,next);card.append(tk,title,body,dots,acts);root.append(shade,hole,card);
+    var prev=document.activeElement;
+    function target(){var s=steps[i];if(!s.sel)return null;var el=document.querySelector(s.sel);return onScreen(el)?el:null}
+    function place(){
+      if(!run)return;
+      var el=target(),vw=window.innerWidth,vh=window.innerHeight,m=12,gap=14;
+      var cw=card.offsetWidth,ch=card.offsetHeight,x,y;
+      if(!el){
+        shade.className='tour-shade on';hole.style.display='none';
+        x=(vw-cw)/2;y=Math.max(m,(vh-ch)/2.4);
+      }else{
+        var r=el.getBoundingClientRect();
+        shade.className='tour-shade';hole.style.display='block';
+        var pad=4,hx=Math.max(0,r.left-pad),hy=Math.max(0,r.top-pad),hw=Math.min(vw-hx,r.width+pad*2),hh=Math.min(vh-hy,r.height+pad*2);
+        hole.style.left=hx+'px';hole.style.top=hy+'px';hole.style.width=hw+'px';hole.style.height=hh+'px';
+        var spaceB=vh-(hy+hh)-gap-m,spaceA=hy-gap-m,spaceR=vw-(hx+hw)-gap-m,spaceL=hx-gap-m;
+        var cx=Math.min(Math.max(m,hx+hw/2-cw/2),vw-cw-m),cy=Math.min(Math.max(m,hy+hh/2-ch/2),vh-ch-m);
+        if(spaceB>=ch){x=cx;y=hy+hh+gap}
+        else if(spaceA>=ch){x=cx;y=hy-gap-ch}
+        else if(spaceR>=cw){x=hx+hw+gap;y=cy}
+        else if(spaceL>=cw){x=hx-gap-cw;y=cy}
+        else{x=Math.max(m,(vw-cw)/2);y=vh-ch-m}
+      }
+      card.style.left=Math.max(m,x)+'px';card.style.top=Math.max(m,y)+'px';
+    }
+    function show(){
+      var s=steps[i];
+      if(s.before){try{s.before()}catch(e){}}
+      if(o.onStep){try{o.onStep(s,i)}catch(e){}}
+      tk.textContent='Step '+(i+1)+' of '+steps.length;title.textContent=s.title||'';
+      body.replaceChildren();
+      var ul=null;
+      (s.body||[]).forEach(function(line){
+        if(/^- /.test(line)){if(!ul){ul=mk('ul');body.append(ul)}ul.append(mk('li',null,line.slice(2)))}
+        else{ul=null;body.append(mk('p',null,line))}
+      });
+      dots.replaceChildren();
+      steps.forEach(function(_,k){var d=mk('i',k===i?'on':'');d.setAttribute('aria-hidden','true');dots.append(d)});
+      back.hidden=i===0;next.textContent=i===steps.length-1?'Done':'Next';
+      skip.hidden=i===steps.length-1;
+      var el=s.sel?document.querySelector(s.sel):null;
+      if(onScreen(el)){try{el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'})}catch(e){}}
+      place();
+      requestAnimationFrame(function(){place();try{card.focus({preventScroll:true})}catch(e){}});
+    }
+    function go(d){var n=i+d;if(n<0)return;if(n>=steps.length){stop();return}i=n;show()}
+    skip.addEventListener('click',stop);back.addEventListener('click',function(){go(-1)});next.addEventListener('click',function(){go(1)});
+    shade.addEventListener('click',function(e){e.stopPropagation()});
+    var tabs=function(e){
+      if(e.key==='Escape'){e.preventDefault();e.stopPropagation();stop();return}
+      if(e.key==='ArrowRight'){e.preventDefault();go(1);return}
+      if(e.key==='ArrowLeft'){e.preventDefault();go(-1);return}
+      if(e.key!=='Tab')return;
+      var f=[].filter.call(card.querySelectorAll('button'),function(b){return !b.hidden&&!b.disabled});
+      if(!f.length)return;
+      var first=f[0],last=f[f.length-1],a=document.activeElement;
+      if(!card.contains(a)){e.preventDefault();(e.shiftKey?last:first).focus();return}
+      if(e.shiftKey&&(a===first||a===card)){e.preventDefault();last.focus()}
+      else if(!e.shiftKey&&a===last){e.preventDefault();first.focus()}
+    };
+    run={root:root,o:o,keys:tabs,place:place,prev:prev};
+    if(reduce())root.classList.add('still');
+    document.body.append(root);
+    document.addEventListener('keydown',tabs,true);window.addEventListener('resize',place);window.addEventListener('scroll',place,true);
+    show();
+    return true;
+  }
+  return {start:start,stop:stop,seen:seen,active:function(){return !!run}};
+})();
+
+/* ============================ helpers ============================ */
+var $=function(s,r){return (r||document).querySelector(s)};
+function h(tag,attrs){
+  var el=document.createElement(tag);
+  if(attrs)Object.keys(attrs).forEach(function(k){
+    var v=attrs[k]; if(v==null||v===false)return;
+    if(k==='class')el.className=v;
+    else if(k==='text')el.textContent=v;
+    else if(k==='html')el.innerHTML=v;
+    else if(k.slice(0,2)==='on')el.addEventListener(k.slice(2),v);
+    else el.setAttribute(k,v===true?'':v);
+  });
+  for(var i=2;i<arguments.length;i++)add(el,arguments[i]);
+  return el;
+}
+function add(el,k){ if(k==null||k===false)return; if(Array.isArray(k))k.forEach(function(x){add(el,x)}); else el.append(k.nodeType?k:document.createTextNode(String(k))); }
+function txt(v){return (v==null?'':String(v)).trim()}
+function opts(sel,choices,cur){
+  sel.append(h('option',{value:'',text:''}));
+  choices.forEach(function(c){var v=Array.isArray(c)?c[0]:c,l=Array.isArray(c)?c[1]:c;sel.append(h('option',{value:v,text:l}))});
+  if(cur!=null)sel.value=cur;
+  return sel;
+}
+function rosterSel(id){return opts(h('select',{id:id}),ROSTER)}
+function hue(s){var n=0;s=String(s||'?');for(var i=0;i<s.length;i++)n=(n*31+s.charCodeAt(i))%360;return n}
+function initials(s){s=txt(s);if(!s)return '?';var p=s.split(/\s+/);return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase()}
+function fmtTime(ts){try{return new Date(ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:TZ})}catch(e){return ''}}
+function fmtDate(d){ if(!d)return ''; var p=String(d).split('-'); if(p.length!==3)return d; var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1]; return m+' '+(+p[2]); }
+function mins(t){var p=t.split(':');return +p[0]*60+ +p[1]}
+function t12(t){var p=t.split(':'),hh=+p[0];return ((hh%12)||12)+':'+p[1]}
+function zoneNow(){
+  try{
+    var f=new Intl.DateTimeFormat('en-US',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    var p={};f.formatToParts(new Date()).forEach(function(x){p[x.type]=x.value});
+    return {date:p.year+'-'+p.month+'-'+p.day,min:((+p.hour)%24)*60+(+p.minute)};
+  }catch(e){return {date:'',min:0}}
+}
+var toastT;
+function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3200)}
+function copyText(s,btn){
+  function done(){ if(btn){var o=btn.textContent;btn.textContent='Copied';setTimeout(function(){btn.textContent=o},1400)} else toast('Copied') }
+  function fallback(){
+    var ta=h('textarea',{rows:8,readonly:true,style:'position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:40;height:12rem'});
+    ta.value=s;document.body.append(ta);ta.select();
+    toast('Select and copy the text, then click away');
+    ta.addEventListener('blur',function(){ta.remove()});
+  }
+  try{ navigator.clipboard.writeText(s).then(done,fallback) }catch(e){ fallback() }
+}
+
+function slug(s){return String(s||'').normalize('NFKD').replace(/[^\w]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40)||'x'}
+function uid(){return 'm'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function addDaysISO(d,n){var t=new Date(d+'T12:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)}
+function todayISO(){return zoneNow().date||new Date().toISOString().slice(0,10)}
+function optDate(v){ if(!v)return ''; if(v.charAt(0)==='$')return ROOM.opts[v.slice(1)]||''; return v }
+
+/* ============================ state and data layer ============================ */
+var S={};COLS.forEach(function(c){S[c]={}});
+var db=null,canWrite=true,localOnly=false;
+var handlers=[],pending={},flushing=false;
+function on(cols,fn,global){var o={cols:cols,fn:fn,global:!!global};handlers.push(o);try{fn()}catch(e){console.error(e)}return o}
+function notify(col){pending[col]=1;if(flushing)return;flushing=true;requestAnimationFrame(function(){
+  flushing=false;var p=pending;pending={};
+  handlers.slice().forEach(function(o){ if(o.cols.some(function(c){return p[c]})){try{o.fn()}catch(e){console.error(e)}} });
+})}
+function list(col,pred){
+  var out=Object.keys(S[col]).map(function(k){return S[col][k]});
+  if(pred)out=out.filter(pred);
+  return out;

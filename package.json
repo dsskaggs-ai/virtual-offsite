@@ -1,0 +1,23 @@
+{
+  "name": "virtual-offsite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted collaborative meeting rooms for one organization. Seven templates, three themes, and shared records.",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "build": "python3 tools/build-app.py && node tools/build-parts.js",
+    "dev": "node --env-file-if-exists=.env tools/dev-server.js",
+    "test": "npm run build && node test/test-public-edition.js && node test/test-api.js && node test/test-templates.js && node test/test-app.js && node test/test-quarterly.js && node test/test-scorecard.js && node test/test-standup.js && node test/test-console.js && node test/test-tour.js && python3 tools/contrast.py",
+    "looks": "python3 tools/build-app.py"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dsskaggs-ai/virtual-offsite.git"
+  }
+}

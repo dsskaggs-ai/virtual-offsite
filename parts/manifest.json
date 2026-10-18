@@ -1,0 +1,54 @@
+{
+ "files": [
+  {
+   "n": "p01.html",
+   "sha1": "f162ed054e09dbe2bf2041074cde33001a57166a",
+   "bytes": 40026
+  },
+  {
+   "n": "p02.html",
+   "sha1": "2f7da542ba3c74da7a26fd5421982601120493b7",
+   "bytes": 17795
+  },
+  {
+   "n": "p03.html",
+   "sha1": "a814bd05f1c00f9ba8a6fa547f25357cbd683fc2",
+   "bytes": 16526
+  },
+  {
+   "n": "p04.html",
+   "sha1": "412577264ec9ece81d29128d8f8dda1cfc70b694",
+   "bytes": 17340
+  },
+  {
+   "n": "p05.html",
+   "sha1": "f5c1e41ecb8bda939f338ca1bf5f614b71edca52",
+   "bytes": 20325
+  },
+  {
+   "n": "p06.html",
+   "sha1": "ece4a1d1140f0da532db524953f550042243280d",
+   "bytes": 20741
+  },
+  {
+   "n": "p07.html",
+   "sha1": "77b9a34cab53cb7f6248a3d2eec25508c9a450bb",
+   "bytes": 22488
+  },
+  {
+   "n": "p08.html",
+   "sha1": "dab8cb600be2f41cd203cf719d9ef301563f3212",
+   "bytes": 19496
+  },
+  {
+   "n": "host-shim.js",
+   "sha1": "dbe466cb2964b9c1f45a40c2fda3ac32c393bc60",
+   "bytes": 8532
+  },
+  {
+   "n": "console.html",
+   "sha1": "1690b7ea31a95996c4f83e8a9488a422dd9394a6",
+   "bytes": 54079
+  }
+ ]
+}

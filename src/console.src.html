@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Virtual Offsite · Organizer</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232C5E3B'/%3E%3Cg fill='none' stroke='%23FFFFFF' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 17l15 15-15 15'/%3E%3Cpath d='M34 17l15 15-15 15'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&family=Barlow+Condensed:wght@600;700&family=Archivo:wdth,wght@75..100,500..900&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/*LOOKS_START*/
+/*LOOKS_END*/
+/*TOUR_CSS*/
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:.9375rem;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,p,ul{margin:0}ul{padding:0;list-style:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:62rem;margin:0 auto;padding:1rem 1rem 4rem}
+header.top{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;padding:.9rem 0 1.1rem;border-bottom:1px solid var(--line);margin-bottom:1.2rem}
+.mark{width:2.1rem;height:2.1rem;border-radius:.5rem;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}.mark svg{width:1.25rem;height:1.25rem}
+.brand{font-family:var(--f-display);font-weight:var(--d-wt);font-size:1.3rem;letter-spacing:var(--d-track)}
+.sp{flex:1}
+.btn{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:.5rem .9rem;cursor:pointer;font-size:.88rem;font-weight:600;line-height:1.2;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--surface2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.btn.pri:hover{filter:brightness(1.08);background:var(--accent)}
+.btn.sm{padding:.25rem .6rem;font-size:.78rem}
+.btn.bad{color:var(--bad);border-color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.link{border-color:transparent;background:transparent;color:var(--accent)}
+.chip{font-family:var(--f-mono);font-size:.7rem;border-radius:1rem;padding:.12rem .55rem;border:1px solid var(--line);color:var(--ink3);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);border-color:transparent;color:var(--ok)}.chip.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}.chip.bad{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+h1{font-family:var(--f-display);font-weight:var(--d-h1wt);font-size:var(--h1);line-height:var(--h1lh);letter-spacing:var(--d-track);text-transform:var(--d-case)}
+h2{font-family:var(--f-display);font-weight:var(--d-wt);font-size:1.25rem}
+.lede{color:var(--ink2);max-width:42rem;margin-top:.4rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:1.1rem 1.2rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:.9rem;min-width:0}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}.row>*{min-width:0}
+.fld{display:flex;flex-direction:column;gap:.25rem;min-width:0;flex:1 1 12rem}
+.fld>span,.lab{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+input[type=text],input[type=email],input[type=date],input[type=time],input[type=number],input[type=password],select,textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:var(--r);padding:.55rem .65rem}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{resize:vertical;min-height:6rem}
+.help{color:var(--ink3);font-size:.84rem}
+.err{color:var(--bad);font-size:.88rem;min-height:1.2em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:.8rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:1rem;display:flex;flex-direction:column;gap:.5rem;text-align:left;cursor:pointer;min-width:0}
+.card:hover{border-color:var(--accent)}
+.card[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--accent-soft)}
+.card h3{font-family:var(--f-display);font-weight:var(--d-wt);font-size:1.12rem;margin:0}
+.card .basis{font-size:.78rem;color:var(--ink3)}
+.steps{display:flex;gap:.3rem;flex-wrap:wrap;margin:.2rem 0 1rem}
+.steps span{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;padding:.25rem .6rem;border-radius:1rem;border:1px solid var(--line);color:var(--ink3)}
+.steps span.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.steps span.done{color:var(--ok);border-color:var(--ok)}
+.rooms{display:flex;flex-direction:column;gap:.6rem}
+.room{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:.8rem 1rem}
+.room .t{flex:1 1 14rem;min-width:0}.room .t b{display:block;font-size:1.02rem}.room .t small{color:var(--ink3)}
+.ag{display:flex;flex-direction:column;gap:.4rem}
+.agi{display:grid;grid-template-columns:minmax(0,1fr) 5.2rem auto;gap:.4rem;align-items:center;background:var(--surface2);border:1px solid var(--line2);border-radius:var(--r);padding:.4rem .5rem}
+.agi.brk{background:transparent;border-style:dashed}
+.agi .tm{font-family:var(--f-mono);font-size:.72rem;color:var(--ink3)}
+.agi .ctl{display:flex;gap:.15rem}
+.agi .ctl button{border:0;background:transparent;cursor:pointer;color:var(--ink3);padding:.1rem .35rem;border-radius:.3rem;font-size:1rem;line-height:1}
+.agi .ctl button:hover{background:var(--bad-soft);color:var(--bad)}
+.agi .ctl button.mv:hover{background:var(--accent-soft);color:var(--accent)}
+.tbl{width:100%;border-collapse:collapse}.tbl th{font-family:var(--f-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);text-align:left;padding:.3rem .4rem}
+.tbl td{padding:.3rem .4rem;vertical-align:middle;border-top:1px solid var(--line2)}
+.tw{overflow-x:auto}
+.looks{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.8rem}
+.look{border:1px solid var(--line);border-radius:var(--r-lg);padding:.7rem;display:flex;flex-direction:column;gap:.5rem;background:var(--surface);cursor:pointer;text-align:left}
+.look[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.look .sw{border-radius:.5rem;padding:.7rem;display:flex;flex-direction:column;gap:.35rem;height:5.5rem}
+.look .sw b{font-size:1.1rem;line-height:1}.look .sw i{display:block;height:.45rem;border-radius:1rem;width:60%}
+.linkbox{font-family:var(--f-mono);font-size:.74rem;overflow-wrap:anywhere;background:var(--surface2);border:1px solid var(--line2);border-radius:var(--r);padding:.35rem .5rem;min-width:0;flex:1 1 16rem}
+.toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:.5rem .9rem;border-radius:.5rem;font-size:.84rem;z-index:30;max-width:90vw}
+.nav{display:flex;gap:.6rem;justify-content:space-between;flex-wrap:wrap;margin-top:.2rem}
+.big-code{font-family:var(--f-mono);font-size:1.6rem;letter-spacing:.18em;font-weight:600}
+@media (max-width:560px){.agi{grid-template-columns:minmax(0,1fr) 4.4rem}.agi .ctl{grid-column:1/-1;justify-content:flex-end}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5l7 7-7 7"/><path d="M12 5l7 7-7 7"/></svg></div>
+    <div class="brand">Virtual Offsite</div>
+    <span class="chip" id="mailChip"></span>
+    <div class="sp"></div>
+    <button class="btn sm" id="homeBtn" type="button">Your rooms</button>
+    <button class="btn sm" id="helpBtn" type="button" aria-label="Show the tutorial">Tutorial</button>
+    <button class="btn sm" id="outBtn" type="button">Sign out</button>
+  </header>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+/*TOUR_CORE*/
+var $=function(s,r){return (r||document).querySelector(s)};
+function h(tag,attrs){
+  var el=document.createElement(tag);
+  if(attrs)Object.keys(attrs).forEach(function(k){var v=attrs[k];if(v==null||v===false)return;
+    if(k==='class')el.className=v;else if(k==='text')el.textContent=v;else if(k.slice(0,2)==='on')el.addEventListener(k.slice(2),v);else el.setAttribute(k,v===true?'':v)});
+  for(var i=2;i<arguments.length;i++)add(el,arguments[i]);
+  return el;
+}
+function add(el,k){if(k==null||k===false)return;if(Array.isArray(k))k.forEach(function(x){add(el,x)});else el.append(k.nodeType?k:document.createTextNode(String(k)))}
+var toastT;function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3400)}
+function copy(s,msg){
+  function fb(){var ta=h('textarea',{readonly:true,style:'position:fixed;left:1rem;right:1rem;bottom:1rem;height:9rem;z-index:40'});ta.value=s;document.body.append(ta);ta.select();toast('Select and copy, then click away');ta.addEventListener('blur',function(){ta.remove()})}
+  try{navigator.clipboard.writeText(s).then(function(){toast(msg||'Copied')},fb)}catch(e){fb()}
+}
+function api(a,body){
+  return fetch('/api/admin',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({a:a},body||{}))}).then(function(r){
+    if(r.status===401&&a!=='login'){location.reload();throw new Error('signed out')}
+    return r.json().then(function(j){if(!r.ok){var e=new Error(j.message||'That did not work.');e.code=j.code;throw e}return j})});
+}
+function t12(m){m=((m%1440)+1440)%1440;var a=Math.floor(m/60),b=m%60;return ((a%12)||12)+':'+(b<10?'0':'')+b+(a<12?' AM':' PM')}
+function mins(t){var p=String(t||'09:00').split(':');return (+p[0])*60+(+p[1])}
+function addDays(d,n){var t=new Date(d+'T12:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)}
+function longDate(d){try{return new Date(d+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})}catch(e){return d}}
+var ZONES=['America/New_York','America/Chicago','America/Denver','America/Phoenix','America/Los_Angeles','America/Anchorage','Pacific/Honolulu','America/Toronto','America/Vancouver','America/Mexico_City','America/Sao_Paulo','Europe/London','Europe/Dublin','Europe/Paris','Europe/Berlin','Europe/Madrid','Africa/Johannesburg','Asia/Dubai','Asia/Kolkata','Asia/Singapore','Asia/Tokyo','Australia/Sydney','Pacific/Auckland','UTC'];
+var META={templates:[],presets:{},email:false,base:'',today:''};
+
+/* ---------------------------------------------------------------- people text -> list */
+function parsePeople(text){
+  var out=[];
+  String(text||'').split(/[\n;]+/).forEach(function(chunk){
+    chunk=chunk.trim();if(!chunk)return;
+    var many=(chunk.match(/@/g)||[]).length>1&&chunk.indexOf('<')<0;
+    (many?chunk.split(/[,\s]+/):[chunk]).forEach(function(c){
+      c=c.trim();if(!c)return;
+      var m=/^"?(.*?)"?\s*<([^>]+)>$/.exec(c),n,e;
+      if(m){n=m[1].trim();e=m[2].trim()}
+      else if(/@/.test(c)&&c.indexOf(',')>=0){var p=c.split(',').map(function(x){return x.trim()});var ei=p.findIndex(function(x){return /@/.test(x)});e=p[ei];n=p.filter(function(x,i){return i!==ei}).join(' ')}
+      else if(/^[^\s@]+@[^\s@]+$/.test(c)){e=c;n=''}
+      else if(/@/.test(c)){var w=c.split(/\s+/),ex=w.findIndex(function(x){return /@/.test(x)});e=w[ex];n=w.filter(function(x,i){return i!==ex}).join(' ')}
+      else{n=c;e=''}
+      if(!n&&e){n=e.split('@')[0].replace(/[._-]+/g,' ').replace(/\b\w/g,function(x){return x.toUpperCase()})}
+      if(n||e)out.push({n:n,e:e.toLowerCase()});
+    });
+  });
+  return out;
+}
+
+/* ---------------------------------------------------------------- home */
+function home(){
+  var v=$('#view');v.replaceChildren(h('div',null,h('h1',{text:'Your meeting rooms'}),h('p',{class:'lede',text:'Set up a room from a template, invite people by email, and run the meeting on one page everyone can type in.'})),
+    h('div',{class:'row',style:'margin:1rem 0'},h('button',{class:'btn pri',id:'newBtn',type:'button',text:'Set up a new meeting',onclick:function(){startWizard()}})),
+    h('div',{class:'rooms',id:'rooms'},h('p',{class:'help',text:'Loading...'})));
+  setTimeout(function(){startConsoleTour(false)},700);
+  api('list').then(function(j){
+    var box=$('#rooms');box.replaceChildren();
+    if(!j.rooms.length){box.append(h('div',{class:'panel'},h('p',{text:'No rooms yet. Set up your first meeting to see it here.'})));return}
+    j.rooms.forEach(function(r){
+      box.append(h('div',{class:'room'},h('div',{class:'t'},h('b',{text:r.title}),h('small',{text:r.tname+(r.when?' · '+r.when:'')+' · '+r.people+' people'+(r.recurring?' · session '+r.sess:'')})),
+        h('span',{class:'chip '+(r.status==='open'?'ok':'warn'),text:r.status}),
+        h('button',{class:'btn sm',type:'button',text:'Manage',onclick:function(){location.hash='room/'+r.id}}),
+        h('a',{class:'btn sm pri',href:r.roomUrl,target:'_blank',rel:'noopener',text:'Open room'})));
+    });
+  }).catch(function(e){$('#rooms').replaceChildren(h('p',{class:'err',text:e.message}))});
+}
+
+/* ---------------------------------------------------------------- wizard */
+var W=null;
+var STEPS=['Template','Details','Agenda','People','Look','Create'];
+function nextWeekday(){var d=addDays(META.today,7),dow=new Date(d+'T12:00:00Z').getUTCDay();if(dow===6)d=addDays(d,2);if(dow===0)d=addDays(d,1);return d}
+function startWizard(){
+  W={step:0,tpl:null,title:'',org:'',dates:[],start:'09:00',tz:(function(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone}catch(e){return 'America/Chicago'}})(),opts:{},agenda:[],peopleText:'',people:[],look:'field',theme:'light',send:true,err:''};
+  if(ZONES.indexOf(W.tz)<0)ZONES.unshift(W.tz);
+  location.hash='new';wizard();
+}
+function pickTemplate(t){
+  W.tpl=t;W.title=t.defaultTitle;
+  W.agenda=t.days.map(function(d){return {label:d.label,items:d.items.map(function(i){return i.brk?{brk:i.brk,mins:i.mins}:{id:i.id,title:i.title,mins:i.mins}})}});
+  var d=nextWeekday();W.dates=t.days.map(function(_,i){return i?addDays(W.dates[i-1]||d,1):d});
+  W.opts={};(t.setup||[]).forEach(function(f){W.opts[f.k]=''});
+}
+function planDefaults(){
+  var base=W.dates[0]||META.today,o={};
+  (W.tpl.setup||[]).forEach(function(f){var m=/^\+(\d+)d$/.exec(f.def||'');o[f.k]=m?addDays(base,+m[1]):''});
+  return o;
+}
+function stepBar(){return h('div',{class:'steps'},STEPS.map(function(s,i){return h('span',{class:i===W.step?'on':(i<W.step?'done':''),text:(i+1)+' '+s})}))}
+function wizard(){
+  var v=$('#view');
+  var body;
+  if(W.step===0)body=sTemplate();else if(W.step===1)body=sDetails();else if(W.step===2)body=sAgenda();else if(W.step===3)body=sPeople();else if(W.step===4)body=sLook();else body=sReview();
+  v.replaceChildren(stepBar(),body);
+  window.scrollTo(0,0);
+}
+function nav(canNext,nextLabel,onNext){
+  var err=h('div',{class:'err',role:'alert',text:W.err||''});W.err='';
+  return h('div',null,err,h('div',{class:'nav'},
+    W.step>0?h('button',{class:'btn',type:'button',text:'Back',onclick:function(){W.step--;wizard()}}):h('button',{class:'btn',type:'button',text:'Cancel',onclick:function(){location.hash='';home()}}),
+    h('button',{class:'btn pri',type:'button',text:nextLabel||'Next',onclick:function(){var e=onNext?onNext():null;if(e){W.err=e;wizard();return}W.step++;wizard()}})));
+}
+function totalMins(){var m=0;W.agenda.forEach(function(d){d.items.forEach(function(i){m+=(+i.mins||0)})});return m}
+
+function sTemplate(){
+  var grid=h('div',{class:'grid'},META.templates.map(function(t){
+    return h('button',{class:'card',type:'button','aria-pressed':String(!!W.tpl&&W.tpl.id===t.id),onclick:function(){if(!W.tpl||W.tpl.id!==t.id)pickTemplate(t);wizard()}},
+      h('h3',{text:t.name}),h('p',{text:t.blurb}),
+      h('div',{class:'row'},h('span',{class:'chip',text:t.days.length>1?t.days.length+' days':(t.minutes>=60?(Math.round(t.minutes/6)/10)+' hr':t.minutes+' min')}),t.recurring?h('span',{class:'chip',text:'repeats'}):'',h('span',{class:'chip',text:t.scenes+' agenda items'})),
+      h('div',{class:'basis',text:t.basis}));
+  }));
+  return h('div',{style:'display:flex;flex-direction:column;gap:1rem'},h('div',null,h('h1',{text:'Pick a template'}),h('p',{class:'lede',text:'Each template is a ready agenda with the right working tools for each item. You can change the agenda on the third step.'})),grid,
+    nav(!!W.tpl,'Next',function(){return W.tpl?null:'Pick a template to continue.'}));
+}
+function sDetails(){
+  var t=W.tpl;
+  var title=h('input',{type:'text',id:'f-title',value:W.title,maxlength:'90'}),org=h('input',{type:'text',id:'f-org',value:W.org,maxlength:'80',placeholder:'Optional'});
+  var start=h('input',{type:'time',id:'f-start',value:W.start});
+  var tz=h('select',{id:'f-tz'},ZONES.map(function(z){return h('option',{value:z,text:z.replace(/_/g,' ')})}));tz.value=W.tz;
+  var dates=W.agenda.map(function(d,i){return h('label',{class:'fld'},h('span',{text:(W.agenda.length>1?d.label+' date':'Date')}),h('input',{type:'date',value:W.dates[i]||'',oninput:function(ev){W.dates[i]=ev.target.value}}))});
+  var setup=(t.setup||[]).map(function(f){var def=planDefaults()[f.k];return h('label',{class:'fld'},h('span',{text:f.label}),h('input',{type:'date',value:W.opts[f.k]||def,oninput:function(ev){W.opts[f.k]=ev.target.value}}),f.help?h('small',{class:'help',text:f.help}):'')});
+  setup.forEach(function(el,i){var f=t.setup[i];if(!W.opts[f.k])W.opts[f.k]=planDefaults()[f.k]});
+  return h('div',{class:'panel'},h('h1',{text:'Details'}),h('p',{class:'lede',text:t.name+'. '+t.basis}),
+    h('div',{class:'row'},h('label',{class:'fld',style:'flex:2 1 18rem'},h('span',{text:'Meeting name'}),title),h('label',{class:'fld'},h('span',{text:'Organization'}),org)),
+    h('div',{class:'row'},dates,h('label',{class:'fld'},h('span',{text:'Start time'}),start),h('label',{class:'fld'},h('span',{text:'Time zone'}),tz)),
+    setup.length?h('div',{class:'row'},setup):'',
+    h('p',{class:'help',text:'Dates are optional. With a date the room can show which item is happening now, and the invitation carries a calendar event.'}),
+    nav(true,'Next',function(){W.title=title.value.trim();W.org=org.value.trim();W.start=start.value||'09:00';W.tz=tz.value;if(!W.title)return 'Give the meeting a name.';return null}));
+}
+function sAgenda(){
+  var day=W.adayIdx||0;if(day>=W.agenda.length)day=0;W.adayIdx=day;
+  var d=W.agenda[day];
+  var t0=mins(W.start);var cursor=t0;for(var k=0;k<day;k++)cursor=t0;
+  var list=h('div',{class:'ag'});
+  var c=t0;
+  d.items.forEach(function(it,i){
+    var from=c;c+=(+it.mins||0);
+    var title=it.brk?h('input',{type:'text',value:it.brk,'aria-label':'Break name',oninput:function(e){it.brk=e.target.value}}):h('input',{type:'text',value:it.title,'aria-label':'Item title',oninput:function(e){it.title=e.target.value}});
+    var m=h('input',{type:'number',min:'1',max:'480',value:String(it.mins),'aria-label':'Minutes',onchange:function(e){it.mins=Math.max(1,Math.min(480,+e.target.value||1));wizard()}});
+    list.append(h('div',{class:'agi'+(it.brk?' brk':'')},
+      h('div',{style:'display:flex;flex-direction:column;gap:.15rem;min-width:0'},title,h('span',{class:'tm',text:t12(from)+' to '+t12(c)+(it.custom?' · '+(META.presets[it.preset]||''):'')})),m,
+      h('div',{class:'ctl'},
+        h('button',{class:'mv',type:'button','aria-label':'Move up',text:'↑',onclick:function(){if(i>0){d.items.splice(i-1,0,d.items.splice(i,1)[0]);wizard()}}}),
+        h('button',{class:'mv',type:'button','aria-label':'Move down',text:'↓',onclick:function(){if(i<d.items.length-1){d.items.splice(i+1,0,d.items.splice(i,1)[0]);wizard()}}}),
+        h('button',{type:'button','aria-label':'Remove',text:'×',onclick:function(){d.items.splice(i,1);wizard()}}))));
+  });
+  var preset=h('select',{'aria-label':'Tool for the new item'},Object.keys(META.presets).map(function(k){return h('option',{value:k,text:META.presets[k]})}));
+  var nt=h('input',{type:'text',placeholder:'New item title','aria-label':'New item title'});
+  function parseOutline(t){
+    var out=[];
+    String(t||'').split(/\n+/).forEach(function(line){
+      line=line.replace(/^[\s\-*•]+/,'').trim();if(!line)return;
+      var m=/^(.*?)[\s|:\-]+\(?(\d{1,3})\s*(?:min|mins|minutes)?\)?$/i.exec(line);
+      var title=(m?m[1]:line).trim()||'Discussion';
+      out.push({custom:true,preset:'notes',title:title.slice(0,80),mins:m?Math.max(1,Math.min(480,+m[2])):15,out:'A clear output from this item.'});
+    });
+    return out.slice(0,40);
+  }
+  var outline=h('textarea',{placeholder:'One agenda item per line. Add minutes after a pipe, colon, or dash. For example:\\nWelcome | 5\\nLast quarter numbers: 20\\nChoose the quarter priorities - 45','aria-label':'Agenda outline',style:'min-height:6rem'});
+  var outlineRow=h('div',null,h('div',{class:'lab',text:'Or paste an outline'}),outline,
+    h('div',{class:'row',style:'margin-top:.4rem'},
+      h('button',{class:'btn',type:'button',text:'Build items from the outline',onclick:function(){
+        var got=parseOutline(outline.value);if(!got.length){outline.focus();return}
+        d.items=got;wizard();
+      }}),
+      W.tpl.id==='generic'?h('button',{class:'btn',type:'button',text:'Clear the agenda and start over',onclick:function(){d.items=[];wizard()}}):''));
+  var tabs=W.agenda.length>1?h('div',{class:'row'},W.agenda.map(function(x,i){return h('button',{class:'btn sm'+(i===day?' pri':''),type:'button',text:x.label,onclick:function(){W.adayIdx=i;wizard()}})})):'';
+  var total=totalMins();
+  return h('div',{class:'panel'},h('h1',{text:'Agenda'}),h('p',{class:'lede',text:'Retime, reorder, rename, or remove items. Add your own with the tool you want for it, or build the whole agenda from an outline. The content and tools of each template item stay as designed.'}),tabs,list,
+    h('div',{class:'row'},nt,preset,h('button',{class:'btn',type:'button',text:'Add item',onclick:function(){var t=nt.value.trim();if(!t){nt.focus();return}d.items.push({custom:true,preset:preset.value,title:t,mins:15,out:''});wizard()}}),
+      h('button',{class:'btn',type:'button',text:'Add break',onclick:function(){d.items.push({brk:'Break',mins:15});wizard()}})),
+    outlineRow,
+    h('p',{class:'help',text:'Total '+Math.floor(total/60)+' hr '+(total%60)+' min across '+W.agenda.length+(W.agenda.length>1?' days':' day')+'. This day runs '+t12(t0)+' to '+t12(t0+d.items.reduce(function(a,i){return a+(+i.mins||0)},0))+'.'}),
+    nav(true,'Next',function(){var n=0;W.agenda.forEach(function(x){x.items.forEach(function(i){if(!i.brk)n++})});return n?null:'Keep at least one agenda item.'}));
+}
+function sPeople(){
+  var ta=h('textarea',{id:'f-people',placeholder:'One per line. Any of these work:\nAnn Lee <ann@company.com>\nbo.diaz@company.com\nCy Ng, cy@company.com\nA list pasted from your email program also works.'});
+  ta.value=W.peopleText;
+  var tb=h('tbody');
+  function draw(){
+    tb.replaceChildren();
+    W.people.forEach(function(p,i){
+      tb.append(h('tr',null,
+        h('td',null,h('input',{type:'text',value:p.n,'aria-label':'Name',oninput:function(e){p.n=e.target.value}})),
+        h('td',null,h('input',{type:'email',value:p.e,'aria-label':'Email',oninput:function(e){p.e=e.target.value}})),
+        h('td',null,h('label',{class:'row',style:'flex-wrap:nowrap;gap:.3rem'},h('input',{type:'checkbox',checked:p.lead?true:null,onchange:function(e){p.lead=e.target.checked}}),h('span',{class:'help',text:'Facilitator'}))),
+        h('td',null,h('button',{class:'btn sm',type:'button','aria-label':'Remove',text:'×',onclick:function(){W.people.splice(i,1);draw()}}))));
+    });
+    cnt.textContent=W.people.length+' '+(W.people.length===1?'person':'people');
+  }
+  var cnt=h('span',{class:'chip'});
+  var addBtn=h('button',{class:'btn',type:'button',text:'Add to the list',onclick:function(){
+    var got=parsePeople(ta.value);if(!got.length){return}
+    got.forEach(function(g){if(!W.people.some(function(p){return p.n.toLowerCase()===g.n.toLowerCase()||(g.e&&p.e===g.e)}))W.people.push({n:g.n,e:g.e,lead:false})});
+    if(!W.people.some(function(p){return p.lead}))W.people[0].lead=true;
+    ta.value='';W.peopleText='';draw();
+  }});
+  draw();
+  return h('div',{class:'panel'},h('h1',{text:'Who is in the meeting'}),h('p',{class:'lede',text:'Add everyone by email address. Each person gets a personal link that signs them in. No passwords, and nobody has to create an account.'}),
+    ta,h('div',{class:'row'},addBtn,cnt),
+    h('div',{class:'tw'},h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',{text:'Name'}),h('th',{text:'Email'}),h('th',{text:'Role'}),h('th',{text:''}))),tb)),
+    h('p',{class:'help',text:'Facilitators can move everyone to the next agenda item and end a session. Pick at least one. Someone without an email address still gets a personal link to share by hand.'}),
+    nav(true,'Next',function(){
+      if(ta.value.trim())addBtn.click();
+      if(!W.people.length)return 'Add at least one person.';
+      var bad=W.people.filter(function(p){return !p.n.trim()});if(bad.length)return 'Every person needs a name.';
+      var be=W.people.filter(function(p){return p.e&&!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(p.e)});if(be.length)return '"'+be[0].e+'" does not look like an email address.';
+      if(!W.people.some(function(p){return p.lead}))return 'Pick at least one facilitator.';
+      return null}));
+}
+var LOOKS=[{k:'field',n:'Field',d:'Warm paper, serif headings, green accent.',bg:'#F2EFE6',sf:'#FFFEFA',ac:'#2C5E3B',ff:'Fraunces,Georgia,serif',tt:'none'},
+           {k:'cab',n:'Cab',d:'Cool steel, condensed capitals, teal accent.',bg:'#E7EBED',sf:'#FFFFFF',ac:'#0B6F80',ff:'"Barlow Condensed","Arial Narrow",sans-serif',tt:'uppercase'},
+           {k:'spec',n:'Spec',d:'Clean blue-white, compact headings, blue accent.',bg:'#EDF0F5',sf:'#FFFFFF',ac:'#1B4F9C',ff:'Archivo,Arial,sans-serif',tt:'none'}];
+function sLook(){
+  var looks=h('div',{class:'looks'},LOOKS.map(function(l){
+    return h('button',{class:'look',type:'button','aria-pressed':String(W.look===l.k),onclick:function(){W.look=l.k;wizard()}},
+      h('div',{class:'sw',style:'background:'+l.bg},h('b',{style:'font-family:'+l.ff+';text-transform:'+l.tt+';color:#1b1b1b',text:W.title||'Meeting'}),h('i',{style:'background:'+l.ac}),h('i',{style:'background:'+l.ac+';opacity:.4;width:40%'})),
+      h('b',{text:l.n}),h('span',{class:'help',text:l.d}));
+  }));
+  var th=h('div',{class:'row'},[['light','Light'],['dark','Dark'],['auto','Match each person\'s device']].map(function(x){
+    return h('label',{class:'row',style:'flex-wrap:nowrap;gap:.35rem'},h('input',{type:'radio',name:'theme',value:x[0],checked:W.theme===x[0]?true:null,onchange:function(){W.theme=x[0]}}),h('span',{text:x[1]}))}));
+  return h('div',{class:'panel'},h('h1',{text:'Choose a look'}),h('p',{class:'lede',text:'The look is how the room appears to everyone. Each person can still switch between light and dark on their own screen.'}),looks,
+    h('div',null,h('div',{class:'lab',text:'Starting color theme'}),th),nav(true,'Next'));
+}
+function sReview(){
+  var t=W.tpl,n=W.people.length,withMail=W.people.filter(function(p){return p.e}).length;
+  var send=h('input',{type:'checkbox',id:'f-send',checked:META.email&&W.send?true:null,disabled:META.email?null:true,onchange:function(e){W.send=e.target.checked}});
+  var err=h('div',{class:'err',role:'alert',text:W.err||''});W.err='';
+  var go=h('button',{class:'btn pri',type:'button',text:'Create the room',onclick:function(){
+    go.disabled=true;go.textContent='Creating...';
+    api('create',{template:t.id,title:W.title,org:W.org,dates:W.dates,start:W.start,tz:W.tz,opts:W.opts,agenda:W.agenda,people:W.people,look:W.look,theme:W.theme,send:META.email&&W.send}).then(function(j){showCreated(j)}).catch(function(e){go.disabled=false;go.textContent='Create the room';err.textContent=e.message});
+  }});
+  var rows=[['Template',t.name],['Meeting',W.title+(W.org?' · '+W.org:'')],['When',W.dates.filter(Boolean).map(longDate).join(', ')+(W.dates[0]?' at ':'')+t12(mins(W.start))+' '+W.tz.replace(/_/g,' ')],
+    ['Agenda',W.agenda.reduce(function(a,d){return a+d.items.filter(function(i){return !i.brk}).length},0)+' items, '+Math.floor(totalMins()/60)+' hr '+(totalMins()%60)+' min'],['People',n+' ('+withMail+' with email)'],['Look',LOOKS.filter(function(l){return l.k===W.look})[0].n+', '+W.theme]];
+  return h('div',{class:'panel'},h('h1',{text:'Review and create'}),
+    h('div',{class:'tw'},h('table',{class:'tbl'},h('tbody',null,rows.map(function(r){return h('tr',null,h('th',{text:r[0]}),h('td',{text:r[1]}))})))),
+    h('label',{class:'row',style:'flex-wrap:nowrap;gap:.5rem;align-items:flex-start'},send,h('span',null,h('b',{text:'Email the invitations now'}),h('br'),h('span',{class:'help',text:META.email?'Each person gets one email with their personal link'+(W.dates[0]?' and a calendar event':'')+'.':'Email is not set up on this server, so nothing is sent. You will get a personal link for each person to copy or send yourself. See the setup notes to turn email on.'}))),
+    err,h('div',{class:'nav'},h('button',{class:'btn',type:'button',text:'Back',onclick:function(){W.step--;wizard()}}),go));
+}
+
+/* ---------------------------------------------------------------- after creating, and the manage view */
+function invitationText(room){
+  return room.people.map(function(p){return p.n+': '+p.link}).join('\n');
+}
+function mailto(room,p){
+  var sub='You are invited: '+room.title;
+  var body='Hi '+p.n.split(' ')[0]+',\n\n'+(room.when?'We are meeting '+room.when+'.\n\n':'')+room.title+' ('+room.tname+')\n\nYour personal link, no password needed:\n'+p.link+'\n\nPlease do not forward it.';
+  return 'mailto:'+encodeURIComponent(p.e)+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);
+}
+function peopleTable(room,mail,reload){
+  var byName={};(mail||[]).forEach(function(m){byName[m.n]=m});
+  var tb=h('tbody');
+  room.people.forEach(function(p){
+    var m=byName[p.n],status=m?(m.sent?h('span',{class:'chip ok',text:'Sent'}):h('span',{class:'chip warn',title:m.reason,text:p.e?'Not sent':'No email'})):'';
+    var link=h('div',{class:'linkbox',text:p.link});
+    tb.append(h('tr',null,
+      h('td',null,h('b',{text:p.n}),p.lead?h('span',{class:'chip',style:'margin-left:.4rem',text:'facilitator'}):'',h('div',{class:'help',text:p.e||'no email'})),
+      h('td',null,link),
+      h('td',null,h('div',{class:'row',style:'gap:.3rem'},status,
+        h('button',{class:'btn sm',type:'button',text:'Copy link',onclick:function(){copy(p.link,'Link copied for '+p.n)}}),
+        p.e?h('a',{class:'btn sm',href:mailto(room,p),text:'Write email'}):'',
+        reload?h('button',{class:'btn sm',type:'button',text:p.lead?'Make member':'Make facilitator',onclick:function(){api('person',{rid:room.id,idx:p.i,op:'lead',lead:!p.lead}).then(function(j){reload(j.room)}).catch(function(e){toast(e.message)})}}):'',
+        reload&&p.e?h('button',{class:'btn sm',type:'button',text:'Send again',onclick:function(ev){ev.target.disabled=true;api('invite',{rid:room.id,idx:[p.i]}).then(function(j){toast(j.mail[0].sent?'Sent to '+p.e:'Not sent: '+j.mail[0].reason);ev.target.disabled=false}).catch(function(e){toast(e.message)})}}):'',
+        reload?h('button',{class:'btn sm',type:'button',text:'New link',title:'The old link stops working',onclick:function(){if(!confirm('Replace the link for '+p.n+'? The old link stops working.'))return;api('person',{rid:room.id,idx:p.i,op:'newlink'}).then(function(j){reload(j.room);toast('New link made')}).catch(function(e){toast(e.message)})}}):'',
+        reload?h('button',{class:'btn sm bad',type:'button',text:'Remove',onclick:function(){if(!confirm('Remove '+p.n+' from the room?'))return;api('person',{rid:room.id,idx:p.i,op:'remove'}).then(function(j){reload(j.room)}).catch(function(e){toast(e.message)})}}):''))));
+  });
+  return h('div',{class:'tw'},h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',{text:'Person'}),h('th',{text:'Personal link'}),h('th',{text:''}))),tb));
+}
+function showCreated(j){
+  var room=j.room,sent=j.mail.filter(function(m){return m.sent}).length,v=$('#view');
+  try{history.replaceState(null,'','#room/'+room.id)}catch(e){}
+  v.replaceChildren(h('div',null,h('h1',{text:'The room is ready'}),h('p',{class:'lede',text:room.title+(room.when?' · '+room.when:'')})),
+    h('div',{class:'panel'},
+      h('div',{class:'row'},h('a',{class:'btn pri',href:room.roomUrl,target:'_blank',rel:'noopener',text:'Open the room'}),h('button',{class:'btn',type:'button',text:'Copy all invitations',onclick:function(){copy(invitationText(room),'All links copied')}}),h('button',{class:'btn',type:'button',text:'Manage this room',onclick:function(){manage(room.id)}})),
+      j.mail.length?h('p',{text:sent+' of '+j.mail.length+' invitation emails sent.'+(sent<j.mail.length?' The rest need a link sent by hand. Use Copy link or Write email below.':'')}):
+        h('p',{text:META.email?'No emails were sent. Use the links below.':'Email is not set up on this server, so nothing was sent. Copy each personal link below, or use Write email.'}),
+      peopleTable(room,j.mail,null),
+      h('div',{class:'row'},h('span',{class:'lab',text:'Room code for walk-ins'}),h('span',{class:'big-code',text:room.code}),h('button',{class:'btn sm',type:'button',text:'Copy',onclick:function(){copy('Join at '+room.roomUrl+' with the room code '+room.code)}})),
+      h('p',{class:'help',text:'Anyone with the room code can join as a participant by typing their name. Personal links are better because they know who you are.'})));
+}
+function manage(rid){
+  var v=$('#view');v.replaceChildren(h('p',{class:'help',text:'Loading...'}));
+  location.hash='room/'+rid;
+  api('get',{rid:rid}).then(function(j){draw(j.room)}).catch(function(e){v.replaceChildren(h('p',{class:'err',text:e.message}))});
+  function draw(room){
+    var recs=h('div',{class:'row'});
+    fetch('/api/admin?a=record&rid='+rid,{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(j){
+      if(!j.records||!j.records.length){recs.append(h('span',{class:'help',text:'No saved records yet. A facilitator can save one from the room.'}));return}
+      j.records.forEach(function(r){recs.append(h('a',{class:'btn sm',href:'/api/admin?a=record&rid='+rid+'&n='+r.n,text:'Session '+r.sess+' · '+new Date(r.ts).toLocaleDateString()}))});
+    }).catch(function(){});
+    var title=h('input',{type:'text',value:room.title,maxlength:'90'}),start=h('input',{type:'time',value:room.start}),date=h('input',{type:'date',value:room.dates[0]||''});
+    var pt=h('textarea',{placeholder:'Add more people. Name <email>, one per line.'});
+    var del=h('input',{type:'text',placeholder:'Type the room code to delete',style:'max-width:14rem'});
+    v.replaceChildren(
+      h('div',null,h('h1',{text:room.title}),h('p',{class:'lede',text:room.tname+(room.when?' · '+room.when:'')+(room.recurring?' · session '+room.sess:'')})),
+      h('div',{class:'panel'},h('div',{class:'row'},h('a',{class:'btn pri',href:room.roomUrl,target:'_blank',rel:'noopener',text:'Open the room'}),h('span',{class:'chip '+(room.status==='open'?'ok':'warn'),text:room.status}),
+          h('button',{class:'btn',type:'button',text:room.status==='open'?'Close the room':'Reopen the room',onclick:function(){api(room.status==='open'?'close':'reopen',{rid:rid}).then(function(j){draw(j.room)}).catch(function(e){toast(e.message)})}}),
+          h('button',{class:'btn',type:'button',text:'Email everyone again',disabled:META.email?null:true,onclick:function(ev){ev.target.disabled=true;api('invite',{rid:rid}).then(function(j){toast(j.mail.filter(function(m){return m.sent}).length+' of '+j.mail.length+' sent');ev.target.disabled=false}).catch(function(e){toast(e.message)})}}),
+          h('button',{class:'btn',type:'button',text:'Copy all invitations',onclick:function(){copy(invitationText(room),'All links copied')}})),
+        h('div',{class:'row'},h('span',{class:'lab',text:'Room code'}),h('span',{class:'big-code',text:room.code})),
+        peopleTable(room,null,draw),
+        h('div',null,pt,h('div',{class:'row',style:'margin-top:.4rem'},h('button',{class:'btn',type:'button',text:'Add people and send links',onclick:function(){
+          var got=parsePeople(pt.value);if(!got.length)return;
+          api('addpeople',{rid:rid,people:got,send:META.email}).then(function(j){draw(j.room);toast('Added '+got.length)}).catch(function(e){toast(e.message)})}})))),
+      h('div',{class:'panel'},h('h2',{text:'Details'}),h('div',{class:'row'},h('label',{class:'fld',style:'flex:2 1 16rem'},h('span',{text:'Meeting name'}),title),h('label',{class:'fld'},h('span',{text:'First date'}),date),h('label',{class:'fld'},h('span',{text:'Start time'}),start)),
+        h('div',{class:'row'},h('button',{class:'btn',type:'button',text:'Save details',onclick:function(){api('update',{rid:rid,title:title.value,start:start.value,dates:room.dates.map(function(d,i){return i?d:date.value})}).then(function(j){draw(j.room);toast('Saved')}).catch(function(e){toast(e.message)})}}),
+          LOOKS.map(function(l){return h('button',{class:'btn sm'+(room.look===l.k?' pri':''),type:'button',text:l.n,onclick:function(){api('update',{rid:rid,look:l.k}).then(function(j){draw(j.room)})}})}))),
+      h('div',{class:'panel'},h('h2',{text:'Saved session records'}),recs),
+      h('div',{class:'panel'},h('h2',{text:'Delete this room'}),h('p',{class:'help',text:'This removes the room and everything typed into it, for good. Download any records first.'}),
+        h('div',{class:'row'},del,h('button',{class:'btn bad',type:'button',text:'Delete for good',onclick:function(){api('delete',{rid:rid,confirm:del.value}).then(function(){toast('Deleted');location.hash='';home()}).catch(function(e){toast(e.message)})}}))));
+  }
+}
+
+/* ---------------------------------------------------------------- boot */
+function route(){
+  var hs=location.hash.replace(/^#/,'');
+  if(hs.indexOf('room/')===0)manage(hs.slice(5));
+  else if(hs==='new'){if(!W)startWizard();else wizard()}
+  else home();
+}
+
+/* ---------------------------------------------------------------- first sign-in tour */
+function consoleTourSteps(){
+  var mailOn=!!(META&&META.email);
+  return [
+    {title:'Welcome to Virtual Offsite',body:[
+      'You set up a room from a template, invite people by email, and run the meeting on one page that everyone types into.',
+      'This tour takes about a minute. The Tutorial button at the top replays it any time.']},
+    {sel:'#newBtn',title:'Start here',body:[
+      'Setting up a meeting takes six short steps:',
+      '- Template: quarterly, annual, weekly, 4DX, daily stand-up, project, or generic.',
+      '- Details: name, date, start time, time zone.',
+      '- Agenda: retime, reorder, rename, remove, add your own items, or paste an outline and build the whole agenda from it.',
+      '- People: paste names and email addresses.',
+      '- Look: three designs, light or dark.',
+      '- Create: review and send the invitations.']},
+    {sel:'#rooms',title:'Your rooms',body:[
+      'Every room you create is listed here. Open room goes to the meeting. Manage lets you close or reopen it, email everyone again, add people, make someone a facilitator, replace a lost link, change the look, and download saved records.']},
+    {sel:'#mailChip',title:mailOn?'Invitations go by email':'Invitations are copy and paste',body:mailOn?[
+      'Each person gets one email with a personal link and a calendar event. The link signs them in, so nobody needs an account or a password.',
+      'If a send fails, the console tells you who and why, and the link is still there to copy.']:[
+      'Email is not set up on this server, so nothing is sent for you. After you create a room, each person has a personal link to copy, with a Write email button that opens your own mail program.',
+      'To turn email on, add RESEND_API_KEY and MAIL_FROM in the server settings. docs/DEPLOY.md has the steps.']},
+    {title:'How people join',body:[
+      '- A personal link signs one person in by name. Treat it like a password.',
+      '- A room code lets someone who was not invited join by typing their name. They are always a participant.',
+      '- Facilitators can lead the room, save a record, and end a session on a recurring room.',
+      'You are ready. Pick Set up a new meeting when you want to start.']}
+  ];
+}
+function startConsoleTour(force){return Tour.start({key:'console',force:!!force,steps:consoleTourSteps()})}
+$('#helpBtn').addEventListener('click',function(){
+  if(location.hash){location.hash='';route()}
+  setTimeout(function(){startConsoleTour(true)},60);
+});
+window.addEventListener('hashchange',route);
+$('#homeBtn').addEventListener('click',function(){location.hash='';route()});
+$('#outBtn').addEventListener('click',function(){api('logout').then(function(){location.reload()})});
+api('templates').then(function(j){META=j;$('#mailChip').textContent=j.email?'Email invites on':'Email invites off';$('#mailChip').className='chip '+(j.email?'ok':'warn');$('#mailChip').title=j.email?'Invitations are emailed from this server.':'Set RESEND_API_KEY and MAIL_FROM to email invitations. Until then you copy each personal link.';route()}).catch(function(e){$('#view').replaceChildren(h('p',{class:'err',text:e.message}))});
+</script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+    var n=h('input',{type:'text',id:'rt-'+id+'-note',placeholder:'Note','aria-label':'Note'});ss.push(bind(n,'rocks',id,'note'));
+    function tb(label,v,cls){return h('button',{type:'button',class:cls||'',text:label,onclick:function(){var r=S.rocks[id];upd('rocks',id,{track:r&&r.track===v?'':v})}})}
+    var bo=tb('On track','on','good'),bf=tb('Off track','off','bad'),bd=tb('Done','done','good');
+    var iss=h('button',{class:'btn sm',type:'button',text:'To issues'});
+    iss.addEventListener('click',function(){var r=S.rocks[id];if(!r||r.issued||!needWho())return;addDoc('issues',{title:r.title+' is off track',detail:'Owner '+(r.owner||'-')+', due '+(fmtDate(r.due)||'-'),status:'open',who:me.who,src:'rock'});upd('rocks',id,{issued:true})});
+    var el=h('div',{class:'rock','data-status':'proposed'},h('div',{class:'rh'},t,h('div',{class:'seg',role:'group','aria-label':'Status'},bo,bf,bd)),
+      h('div',{class:'ggrid'},h('label',{class:'fld',for:'rt-'+id+'-owner'},h('span',{text:'Owner'}),o),h('label',{class:'fld',for:'rt-'+id+'-due'},h('span',{text:'Due'}),d),h('label',{class:'fld',for:'rt-'+id+'-note'},h('span',{text:'Note'}),n)),
+      h('div',{class:'rf'},cfg.toIssue?iss:'',h('span',{style:'margin-left:auto'},h('button',{class:'x','aria-label':'Remove',onclick:function(){delDoc('rocks',id)},text:'×'}))));
+    return {el:el,sync:function(){var r=S.rocks[id];if(!r)return;ss.forEach(function(s){s()});
+      bo.setAttribute('aria-pressed',String(r.track==='on'));bf.setAttribute('aria-pressed',String(r.track==='off'));bd.setAttribute('aria-pressed',String(r.track==='done'));
+      el.dataset.status=r.track==='off'?'rejected':(r.track==='on'||r.track==='done'?'approved':'proposed');
+      iss.hidden=r.track!=='off';iss.disabled=!!r.issued;iss.textContent=r.issued?'In issues':'To issues'}};
+  }
+  on(['rocks'],function(){
+    var items=list('rocks',function(r){return r.scope===SCOPE}).sort(byOrd);
+    Object.keys(rows).forEach(function(id){if(!S.rocks[id]){rows[id].el.remove();delete rows[id]}});
+    items.forEach(function(r){if(!rows[r.id]){rows[r.id]=row(r.id);list_.append(rows[r.id].el)}rows[r.id].sync()});
+    var a=items.filter(function(r){return r.track==='on'||r.track==='done'}).length,b=items.filter(function(r){return r.track==='off'}).length;
+    cnt.textContent=items.length?(a+' on track or done, '+b+' off track, '+(items.length-a-b)+' not scored'):'None yet';
+    var e=box.querySelector('.empty');
+    if(!items.length&&!e)list_.before(h('div',{class:'empty',text:'No '+NPL+' yet. Add them once. They stay from session to session.'}));
+    if(items.length&&e)e.remove();
+  });
+  return box;
+}
+
+/* ---------- issues list: identify, discuss, solve. Ranked by votes, worked from the top. ---------- */
+function Issues(cfg){
+  var cards={},vc={};
+  var ti=h('input',{type:'text',id:'is-new-'+cfg.id,placeholder:'Add an issue','aria-label':'New issue'}),dt=h('textarea',{id:'is-new-d-'+cfg.id,rows:2,placeholder:'A line of detail, if it helps (optional)'});
+  function addNew(){var t=txt(ti.value);if(!t||!needWho())return;addDoc('issues',{title:t,detail:txt(dt.value),status:'open',who:me.who,src:'room'});ti.value='';dt.value='';ti.focus()}
+  ti.addEventListener('keydown',function(e){if(e.key==='Enter')addNew()});
+  var hA=h('div',{class:'sec-h',text:'Working on now'}),hO=h('div',{class:'sec-h',text:'Open, ranked by votes'}),hS=h('div',{class:'sec-h',text:'Solved'}),hP=h('div',{class:'sec-h',text:'Parked'});
+  var main=h('div',{class:'rocks'},hA,hO,hS,hP),cnt=h('span',{class:'meter'});
+  var box=h('section',{class:'panel'},h('div',{class:'ph'},h('h2',{text:cfg.title}),cnt),
+    h('p',{class:'help',text:cfg.prompt||'Add an issue, vote for the ones that matter most, and work them from the top.'}),
+    h('div',{class:'legend'},h('span',null,h('b',{text:'Identify'}),' the real issue'),h('span',null,h('b',{text:'Discuss'}),' until everyone has spoken'),h('span',null,h('b',{text:'Solve'}),' with a decision and a to-do')),
+    h('div',{class:'composer'},h('div',{class:'crow'},ti,h('button',{class:'btn pri',type:'button',text:'Add',onclick:addNew})),dt),main);
+  function card(id){
+    var ss=[];
+    var t=h('input',{type:'text',class:'rt',id:'is-'+id+'-title','aria-label':'Issue'});ss.push(bind(t,'issues',id,'title'));
+    var dtl=h('textarea',{id:'is-'+id+'-detail',rows:2,placeholder:'Detail','aria-label':'Detail'});ss.push(bind(dtl,'issues',id,'detail'));
+    var res=h('textarea',{id:'is-'+id+'-res',rows:2,placeholder:'The decision, in a sentence','aria-label':'Resolution'});ss.push(bind(res,'issues',id,'resolution'));
+    function sb(label,v,cls){return h('button',{type:'button',class:cls||'',text:label,onclick:function(){var r=S.issues[id];upd('issues',id,{status:r&&r.status===v?'open':v})}})}
+    var bW=sb('Working','active'),bS=sb('Solved','solved','good'),bP=sb('Park','parked','bad');
+    var vb=h('button',{class:'vote',type:'button'});
+    vb.addEventListener('click',function(){if(!guard())return;var vid=id+'_'+voteKey();if(S.votes[vid])delDoc('votes',vid);else setDoc('votes',vid,{idea:id,v:voteKey(),ts:Date.now()})});
+    /* a to-do from this issue */
+    var tt=h('input',{type:'text',id:'is-'+id+'-tt',placeholder:'To-do that solves it'}),to=rosterSel('is-'+id+'-to'),tc=h('input',{type:'date',id:'is-'+id+'-tc','aria-label':'Check-in date'}),td=h('input',{type:'date',id:'is-'+id+'-td','aria-label':'Due date'}),te=h('div',{class:'err'});
+    to.firstChild.textContent='Owner';to.setAttribute('aria-label','Owner');
+    var add=h('button',{class:'btn sm',type:'button',text:'Add to-do',onclick:function(){
+      var x=txt(tt.value);if(!x){te.textContent='Write the to-do first.';return}
+      if(!to.value||!tc.value||!td.value){te.textContent='A to-do needs an owner, a check-in date, and a due date.';return}
+      if(!needWho())return;te.textContent='';
+      addDoc('todos',{text:x,owner:to.value,checkin:tc.value,due:td.value,status:'',sess:ROOM.sess,issue:id,src:'issue',who:me.who});tt.value='';toast('To-do added')}});
+    tc.value=addDaysISO(todayISO(),3);td.value=addDaysISO(todayISO(),7);
+    var rm=h('button',{class:'x','aria-label':'Remove issue',text:'×'}),rt;
+    rm.addEventListener('click',function(){if(rm.dataset.sure){delDoc('issues',id);return}rm.dataset.sure='1';rm.textContent='Sure?';clearTimeout(rt);rt=setTimeout(function(){delete rm.dataset.sure;rm.textContent='×'},3000)});
+    var meta=h('div',{class:'sum'});
+    var el=h('article',{class:'rock'},h('div',{class:'rh'},t,vb,h('div',{class:'seg',role:'group','aria-label':'Status'},bW,bS,bP),rm),meta,
+      h('div',{class:'rbody',style:'display:flex;flex-direction:column;gap:.6rem'},dtl,h('label',{class:'fld',for:'is-'+id+'-res'},h('span',{text:'Resolution'}),res),
+        h('div',{class:'crow'},tt,h('label',{class:'fld',for:'is-'+id+'-to',style:'flex:0 0 10rem'},to),tc,td,add),te));
+    return {el:el,sync:function(){var r=S.issues[id];if(!r)return;ss.forEach(function(s){s()});
+      var st=r.status||'open';el.dataset.status=st==='solved'?'approved':(st==='parked'?'rejected':(st==='active'?'active':'proposed'));
+      bW.setAttribute('aria-pressed',String(st==='active'));bS.setAttribute('aria-pressed',String(st==='solved'));bP.setAttribute('aria-pressed',String(st==='parked'));
+      var mine=!!S.votes[id+'_'+voteKey()],nv=vc[id]||0;vb.className='vote'+(mine?' on':'');vb.setAttribute('aria-pressed',String(mine));vb.textContent='+1 '+nv;vb.setAttribute('aria-label',(mine?'Remove your vote. ':'Vote for this. ')+nv+' votes so far');
+      meta.replaceChildren(h('span',{text:(r.who||'')+(r.src==='metric'?' · from the scorecard':(r.src==='rock'?' · from the priorities':''))}),r.resolution?h('span',{class:'sw',text:'Decision: '+r.resolution}):'')}};
+  }
+  function layout(){
+    var items=list('issues');
+    var g={a:[],o:[],s:[],p:[]};
+    items.forEach(function(r){var st=r.status||'open';g[st==='active'?'a':(st==='solved'?'s':(st==='parked'?'p':'o'))].push(r)});
+    function rank(l){l.sort(function(a,b){return (vc[b.id]||0)-(vc[a.id]||0)||(a.ts||0)-(b.ts||0)})}
+    rank(g.a);rank(g.o);rank(g.s);rank(g.p);
+    [['a',10],['o',1000],['s',3000],['p',5000]].forEach(function(x){g[x[0]].forEach(function(r,i){if(cards[r.id])cards[r.id].el.style.order=String(x[1]+i)})});
+    hA.style.order='0';hO.style.order='999';hS.style.order='2999';hP.style.order='4999';
+    hA.hidden=!g.a.length;hO.hidden=!g.o.length;hS.hidden=!g.s.length;hP.hidden=!g.p.length;
+    cnt.textContent=(g.a.length+g.o.length)+' open, '+g.s.length+' solved'+(g.p.length?', '+g.p.length+' parked':'');
+  }
+  on(['issues','votes'],function(){
+    vc={};list('votes').forEach(function(v){vc[v.idea]=(vc[v.idea]||0)+1});
+    var items=list('issues');
+    Object.keys(cards).forEach(function(id){if(!S.issues[id]){cards[id].el.remove();delete cards[id]}});
+    items.forEach(function(r){if(!cards[r.id]){cards[r.id]=card(r.id);main.append(cards[r.id].el)}cards[r.id].sync()});
+    layout();
+    var e=box.querySelector('.empty');
+    if(!items.length){if(!e)main.before(h('div',{class:'empty',text:'No issues yet. Add the first one above.'}))}else if(e)e.remove();
+  });
+  return box;
+}
+
+/* ============================ room: presence and reactions ============================ */
+function buildReactions(box){
+  var room=window.__room;if(!room)return;
+  [['agree','Agree',''],['q','Question','q'],['push','Push back','p']].forEach(function(r){
+    box.append(h('button',{class:'btn sm',type:'button',text:r[1],onclick:function(){room.emit('react',{k:r[0],who:me.who||'Someone'}).catch(function(){})}}));
+  });
+}
+function float(msg){
+  var m={agree:['Agree',''],q:['Question','q'],push:['Push back','p']},d=m[msg.k];if(!d)return;
+  var box=$('#floaters');var el=h('div',{class:'fl '+d[1],text:d[0]+(msg.who?' · '+String(msg.who).slice(0,24):''),style:'left:'+(8+Math.random()*80)+'%'});
+  box.append(el);setTimeout(function(){el.remove()},2700);
+}
+function renderHere(){
+  var box=$('#here');box.replaceChildren();
+  var seen={},list_=peersNow.filter(function(p){var k=(p.by||p.peer);if(seen[k])return false;seen[k]=1;return true});
+  list_.slice(0,6).forEach(function(p){var w=(p.presence&&p.presence.who)||'?';box.append(h('div',{class:'av'+(p.isMe?' me':''),style:'--h:'+hue(w),title:(w==='?'?'Someone':w)+(p.isMe?' (you)':''),text:initials(w)}))});
+  if(list_.length>6)box.append(h('div',{class:'av more',text:'+'+(list_.length-6)}));
+}
+function renderFollow(){
+  var b=$('#followBtn');
+  if(!window.__room&&!db)return;
+  b.hidden=false;
+  if(isAdmin){b.textContent=leading?'Leading the room':'Not leading';b.classList.toggle('on',leading);b.title='When on, the scene you open follows to everyone who is following.'}
+  else{b.textContent=follow?'Following presenter':'Rejoin presenter';b.classList.toggle('on',follow)}
+}
+
+/* ---------- to-dos and commitments. Review last session's, and make new ones with an owner and two dates. ---------- */
+function Todos(cfg){
+  var NOUN=cfg.noun||'to-do',mode=cfg.mode||'both',rows={};
+  var showReview=mode==='review'||mode==='both',showNew=mode==='new'||mode==='both';
+  var cnt=h('span',{class:'meter'}),parts=[];
+  var box=h('section',{class:'panel'},h('div',{class:'ph'},h('h2',{text:cfg.title}),cnt));
+  if(cfg.help)box.append(h('p',{class:'help',text:cfg.help}));
+
+  var revBox=null,revList=null,revSum=null;
+  if(showReview){
+    revSum=h('div',{class:'help'});revList=h('div',{class:'feed'});
+    revBox=h('div',{style:'display:flex;flex-direction:column;gap:.5rem'},h('div',{class:'sec-h',text:'From last session'}),revSum,revList);box.append(revBox);
+  }
+  var newList=h('div',{class:'feed'}),text=null;
+  if(showNew){
+    text=h('input',{type:'text',id:'td-text-'+cfg.id,placeholder:'The '+NOUN+', one sentence'});
+    var who=rosterSel('td-who-'+cfg.id),ci=h('input',{type:'date',id:'td-ci-'+cfg.id,'aria-label':'Check-in date'}),du=h('input',{type:'date',id:'td-du-'+cfg.id,'aria-label':'Due date'}),err=h('div',{class:'err'});
+    who.firstChild.textContent='Owner';who.setAttribute('aria-label','Owner');
+    ci.value=addDaysISO(todayISO(),3);du.value=addDaysISO(todayISO(),7);
+    var ms=cfg.measure?h('select',{id:'td-ms-'+cfg.id,'aria-label':'Lead measure this moves'}):null;
+    function fillMeasures(){
+      if(!ms)return;var cur=ms.value;var names=list('metrics',function(m){return m.type==='lead'}).sort(byOrd).map(function(m){return m.name});
+      var key=names.join('|');if(ms.dataset.k===key)return;ms.dataset.k=key;
+      ms.replaceChildren.apply(ms,[h('option',{value:'',text:names.length?'Lead measure it moves':'No lead measures yet'})].concat(names.map(function(n){return h('option',{value:n,text:n})})));ms.value=cur;
+    }
+    var post=function(){
+      var t=txt(text.value);if(!t){err.textContent='Write the '+NOUN+' first.';return}
+      if(!who.value||!ci.value||!du.value){err.textContent='A '+NOUN+' needs an owner, a check-in date, and a due date.';return}
+      if(ms&&!ms.value){err.textContent='Pick the lead measure it moves.';return}
+      if(!needWho())return;err.textContent='';
+      var d={text:t,owner:who.value,checkin:ci.value,due:du.value,status:'',sess:ROOM.sess,src:cfg.id,who:me.who};if(ms)d.measure=ms.value;
+      addDoc('todos',d);text.value='';text.focus();
+    };
+    text.addEventListener('keydown',function(e){if(e.key==='Enter')post()});
+    box.append(h('div',{class:'sec-h',text:showReview?'New '+NOUN+'s':'Add a '+NOUN}),
+      h('div',{class:'composer'},h('div',{class:'crow'},text),h('div',{class:'crow'},h('label',{class:'fld',for:'td-who-'+cfg.id,style:'flex:0 0 11rem'},h('span',{text:'Owner'}),who),
+        ms?h('label',{class:'fld',for:'td-ms-'+cfg.id,style:'flex:1 1 12rem'},h('span',{text:'Moves'}),ms):'',
+        h('label',{class:'fld',for:'td-ci-'+cfg.id,style:'flex:0 0 9rem'},h('span',{text:'Check-in'}),ci),h('label',{class:'fld',for:'td-du-'+cfg.id,style:'flex:0 0 9rem'},h('span',{text:'Due'}),du),
+        h('button',{class:'btn pri',type:'button',text:'Add',onclick:post})),err),newList);
+  }
+  function row(id,review){
+    var ss=[];
+    var t=h('input',{type:'text',class:'tdt',id:'td-'+id+'-t','aria-label':'Text'});ss.push(bind(t,'todos',id,'text'));
+    var o=rosterSel('td-'+id+'-o');o.setAttribute('aria-label','Owner');o.firstChild.textContent='Owner';ss.push(bind(o,'todos',id,'owner'));
+    var c=h('input',{type:'date',id:'td-'+id+'-c','aria-label':'Check-in date'});ss.push(bind(c,'todos',id,'checkin'));
+    var d=h('input',{type:'date',id:'td-'+id+'-d','aria-label':'Due date'});ss.push(bind(d,'todos',id,'due'));
+    var n=h('input',{type:'text',id:'td-'+id+'-n',placeholder:'If not done, why?','aria-label':'Note'});ss.push(bind(n,'todos',id,'note'));
+    function sb(label,v,cls){return h('button',{type:'button',class:cls||'',text:label,onclick:function(){var r=S.todos[id];upd('todos',id,{status:r&&r.status===v?'':v})}})}
+    var bd=sb('Done','done','good'),bm=sb('Not done','missed','bad');
+    var tag=h('span',{class:'chip'});
+    var el=h('div',{class:'tdrow'},h('div',{class:'crow',style:'flex-wrap:nowrap'},t,review?h('div',{class:'seg',role:'group','aria-label':'Result'},bd,bm):'',h('button',{class:'x','aria-label':'Remove',onclick:function(){delDoc('todos',id)},text:'×'})),
+      h('div',{class:'crow'},h('label',{class:'fld',for:'td-'+id+'-o',style:'flex:0 0 11rem'},o),h('label',{class:'fld',for:'td-'+id+'-c',style:'flex:0 0 9rem'},c),h('label',{class:'fld',for:'td-'+id+'-d',style:'flex:0 0 9rem'},d),review?n:'',tag));
+    return {el:el,review:review,sync:function(){var r=S.todos[id];if(!r)return;ss.forEach(function(s){s()});
+      bd.setAttribute('aria-pressed',String(r.status==='done'));bm.setAttribute('aria-pressed',String(r.status==='missed'));
+      n.hidden=!(r.status==='missed');
+      var late=r.due&&r.due<todayISO()&&r.status!=='done';
+      tag.textContent=(r.measure?'Moves '+r.measure:'')+(late&&review&&!r.status?' · overdue':'');tag.hidden=!tag.textContent;tag.className='chip'+(late?' warn':'');
+      el.dataset.s=r.status||''}};
+  }
+  on(['todos','metrics'],function(){
+    if(showNew&&ms)fillMeasures();
+    var prior=showReview?priorTodos().sort(byTs):[],fresh=showNew?newTodos().sort(byTs):[];
+    var want={};prior.forEach(function(r){want[r.id]='r'});fresh.forEach(function(r){want[r.id]='n'});
+    Object.keys(rows).forEach(function(id){if(!S.todos[id]||want[id]!==(rows[id].review?'r':'n')){rows[id].el.remove();delete rows[id]}});
+    prior.forEach(function(r){if(!rows[r.id]){rows[r.id]=row(r.id,true);revList.append(rows[r.id].el)}rows[r.id].sync()});
+    fresh.forEach(function(r){if(!rows[r.id]){rows[r.id]=row(r.id,false);newList.append(rows[r.id].el)}rows[r.id].sync()});
+    if(showReview){
+      var done=prior.filter(function(r){return r.status==='done'}).length,pct=prior.length?Math.round(done/prior.length*100):0;
+      revSum.textContent=prior.length?(done+' of '+prior.length+' done, '+pct+'%'+(cfg.goal?'. Goal is '+cfg.goal+'%.':'.')):'Nothing was carried over from last session.';
+      revBox.hidden=!prior.length&&mode!=='review';
+    }
+    cnt.textContent=(showNew?fresh.length+' new':'')+(showNew&&showReview?', ':'')+(showReview?prior.filter(function(r){return r.status==='done'||r.status==='missed'}).length+' of '+prior.length+' reviewed':'');
+    var e=newList.querySelector('.empty');
+    if(showNew&&!fresh.length&&!e)newList.append(h('div',{class:'empty',text:'No '+NOUN+'s yet.'}));
+    if(showNew&&fresh.length&&e)e.remove();
+  });
+  return box;
+}
+
+/* ---------- stand-up round table: yesterday, today, blockers for each person ---------- */
+function Standup(cfg){
+  var cards={},cnt=h('span',{class:'meter'}),grid=h('div',{class:'pgrid'});
+  var box=h('section',{class:'panel'},h('div',{class:'ph'},h('h2',{text:cfg.title}),cnt),
+    h('p',{class:'help',text:'Each person writes their own card. Yesterday\'s plan is carried over, so update it and then write today\'s.'}),grid);
+  function card(w){
+    var id=slug(w),ss=[];
+    function ta(k,ph){var el=h('textarea',{id:'up-'+id+'-'+k,rows:2,placeholder:ph,'aria-label':ph});ss.push(bind(el,'updates',id,k,true));return el}
+    var y=ta('yesterday','Finished since last time'),t=ta('today','Doing today'),b=ta('blockers','Blocked by');
+    var chip=h('span',{class:'chip'});
+    var el=h('div',{class:'pcard'},h('h3',null,w,chip),h('label',{class:'fld',for:'up-'+id+'-yesterday'},h('span',{text:'Finished'}),y),h('label',{class:'fld',for:'up-'+id+'-today'},h('span',{text:'Today'}),t),h('label',{class:'fld',for:'up-'+id+'-blockers'},h('span',{text:'Blocked by'}),b));
+    return {el:el,sync:function(){var r=S.updates[id]||{};ss.forEach(function(s){s()});
+      var blocked=txt(r.blockers),posted=txt(r.today);chip.textContent=blocked?'Blocked':(posted?'Posted':'Open');chip.className='chip '+(blocked?'bad':(posted?'ok':'warn'));
+      el.classList.toggle('mine',w===me.who)}};
+  }
+  ROSTER.forEach(function(w){cards[w]=card(w);grid.append(cards[w].el)});
+  on(['updates'],function(){
+    var n=0,bl=0;ROSTER.forEach(function(w){cards[w].sync();var r=S.updates[slug(w)]||{};if(txt(r.today))n++;if(txt(r.blockers))bl++});
+    cnt.textContent=n+' of '+ROSTER.length+' posted'+(bl?', '+bl+' blocked':'');cnt.className='meter'+(n===ROSTER.length?' ok':'');
+  });
+  return box;
+}
+
+/* ---------- rate the meeting, one to ten ---------- */
+function Rating(cfg){
+  var btns=[],avg=h('span',{class:'meter'}),who=h('div',{class:'ochips'});
+  var seg=h('div',{class:'seg rate',role:'group','aria-label':'Your rating'});
+  for(var i=1;i<=10;i++)(function(v){var b=h('button',{type:'button',text:String(v),onclick:function(){
+    if(!needWho())return;var id=cfg.id+'_'+slug(me.who),r=S.ratings[id];upd('ratings',id,{sid:cfg.id,who:me.who,v:r&&r.v===v?0:v,ts:Date.now()},true)}});btns.push(b);seg.append(b)})(i);
+  var box=h('section',{class:'panel'},h('div',{class:'ph'},h('h2',{text:cfg.title}),avg),cfg.prompt?h('p',{class:'help',text:cfg.prompt}):'',seg,who);
+  on(['ratings'],function(){
+    var rs=list('ratings',function(x){return x.sid===cfg.id&&+x.v>0}),mine=S.ratings[cfg.id+'_'+slug(me.who)];
+    btns.forEach(function(b,i){b.setAttribute('aria-pressed',String(!!mine&&mine.v===i+1))});
+    var a=rs.length?rs.reduce(function(s,x){return s+(+x.v)},0)/rs.length:null;
+    avg.textContent=a==null?'No ratings yet':'Average '+a.toFixed(1)+' from '+rs.length+' of '+ROSTER.length;avg.className='meter'+(a!=null&&a>=8?' ok':'');
+    who.replaceChildren();rs.sort(byTs).forEach(function(x){who.append(h('span',{class:'ochip',style:'padding-right:.6rem'},x.who+' · '+x.v))});
+  });
+  return box;
+}
+
+/* ---------- recap of this session ---------- */
+function Recap(cfg){
+  var box=h('section',{class:'panel rb'});
+  on(['decisions','todos','issues','ratings'],function(){
+    var dec=list('decisions').sort(byTs),td=newTodos().sort(byTs),sv=list('issues',function(i){return i.status==='solved'}).sort(byTs);
+    box.replaceChildren(h('div',{class:'ph'},h('h2',{text:cfg.title||'Recap'})),
+      h('div',{class:'rbgrid'},
+        h('div',{class:'rbsec'},h('h3',{text:'New to-dos'}),td.length?h('ul',null,td.map(function(t){return h('li',null,h('b',{text:t.text}),h('span',{class:'k',text:(t.owner||'no owner')+' · check-in '+(fmtDate(t.checkin)||'open')+' · due '+(fmtDate(t.due)||'open')}))})):h('div',{class:'muted',text:'None yet.'})),
+        h('div',{class:'rbsec'},h('h3',{text:'Issues solved'}),sv.length?h('ul',null,sv.map(function(t){return h('li',null,h('b',{text:t.title}),h('span',{text:t.resolution||''}))})):h('div',{class:'muted',text:'None yet.'})),
+        h('div',{class:'rbsec'},h('h3',{text:'Decisions logged'}),dec.length?h('ul',null,dec.map(function(t){return h('li',null,h('b',{text:t.text}),h('span',{class:'k',text:(t.owner||'no owner')+(t.due?' · due '+fmtDate(t.due):'')}))})):h('div',{class:'muted',text:'None yet.'}))));
+  });
+  return box;
+}
+
+/* ---------- the plan, read back from what the room entered ---------- */
+function sectionData(sec){
+  var L=[];
+  switch(sec.kind){
+    case 'targets':list('targets',function(t){return t.scope===sec.scope&&!t.rejected}).sort(byOrd).forEach(function(t){L.push({b:t.metric,t:txt(t.target)||'owed',k:t.note||'',chip:t.agreed&&txt(t.target)?'agreed':''})});break;
+    case 'rocks':list('rocks',function(r){return r.scope===sec.scope&&r.status==='approved'}).sort(byOrd).forEach(function(r){L.push({b:r.title,k:(r.owner||'no owner')+' · due '+(fmtDate(r.due)||'open'),t:r.finish||''})});if(!L.length)L.push({t:'None approved yet.',muted:1});break;
+    case 'crit':{var f=F(sec.form);

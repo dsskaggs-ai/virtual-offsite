@@ -1,0 +1,50 @@
+{
+  "buildCommand": "node tools/verify-parts.js",
+  "outputDirectory": "public",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api/page"
+    },
+    {
+      "source": "/r/:rid",
+      "destination": "/api/page?rid=:rid"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/page?robots=1"
+    }
+  ],
+  "functions": {
+    "api/page.js": {
+      "includeFiles": "parts/**"
+    },
+    "api/health.js": {
+      "includeFiles": "parts/**"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ]
+}

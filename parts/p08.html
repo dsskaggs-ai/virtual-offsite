@@ -1,0 +1,255 @@
+      [['1','Number 1'],['2','Number 2']].forEach(function(n){var p='c'+n[0];L.push({k:n[1]+(f[p+'type']?' · '+f[p+'type']:''),b:txt(f[p+'name'])||'owed',t:[f[p+'cel']&&'celebrate '+f[p+'cel'],f[p+'goal']&&'goal '+f[p+'goal'],f[p+'dis']&&'disappointing '+f[p+'dis']].filter(Boolean).join(' · ')})});
+      L.push({k:'Balance',t:txt(f.balance)||'owed'});if(f.theme!==undefined)L.push({k:'Theme',b:txt(f.theme)||'owed'});break}
+    case 'pairs':{var g=F(sec.form);sec.items.forEach(function(x){L.push({k:x[1],b:g[x[0]+'_v']||'undecided',t:g[x[0]+'_t']||''})});break}
+    case 'fields':{var q=F(sec.form);sec.items.forEach(function(x){L.push({k:x[1],b:txt(q[x[0]])||'owed'})});break}
+    case 'checks':progress().forEach(function(c){L.push({t:c.l+' ('+c.d+')',chip:c.done?'yes':'open'})});break;
+  }
+  return L;
+}
+function Summary(cfg){
+  var box=h('section',{class:'panel rb'});
+  var copy=h('button',{class:'btn',type:'button',text:'Copy the page',onclick:function(ev){copyText(summaryText(cfg),ev.currentTarget)}});
+  function line(r){
+    return h('li',null,r.k?h('span',{class:'k',text:r.k}):'',r.b?h('b',{text:r.b}):'',r.t?h('span',{class:r.muted?'muted':'',text:r.t}):'',r.chip?h('span',{class:'chip '+(r.chip==='open'?'warn':'ok'),text:r.chip}):'');
+  }
+  on(COLS,function(){
+    var cols=cfg.sections.map(function(sec){
+      return h('div',{class:'rbsec'},h('h3',{text:sec.h}),h('ul',null,sectionData(sec).map(line)));
+    });
+    box.replaceChildren(h('div',{class:'ph'},h('h2',{text:cfg.title}),copy),h('div',{class:'rbgrid'},cols));
+  });
+  return box;
+}
+function summaryText(cfg){
+  var out=[cfg.copy||cfg.title,ROOM.title,''];
+  cfg.sections.forEach(function(sec){out.push(sec.h);sectionData(sec).forEach(function(r){out.push('- '+[r.k,r.b,r.t,r.chip&&'['+r.chip+']'].filter(Boolean).join(' | '))});out.push('')});
+  return out.join('\n');
+}
+
+/* ---------- decisions that must leave the room, for the scenes that ask for them ---------- */
+function Required(cfg){
+  var box=h('section',{class:'panel'},h('div',{class:'ph'},h('h2',{text:'Decisions that must leave the room'}),h('span',{class:'meter'})),h('div',{class:'feed'}));
+  on(COLS,function(){
+    var p=progress().filter(function(x){return cfg.day==null||x.day===cfg.day+1}),l=box.querySelector('.feed');l.replaceChildren();
+    p.forEach(function(x){l.append(h('div',{class:'pitem'+(x.done?' done':''),style:'font-size:.95rem'},h('span',{class:'tick'}),x.l,h('small',{text:x.d})))});
+    box.querySelector('.meter').textContent=p.filter(function(x){return x.done}).length+' of '+p.length+' done';
+  });
+  return box;
+}
+
+var TOOLS={
+  required:function(t){return Required(t)},
+  form:function(t){return Form(t)},
+  wall:function(t,sc){return Wall(t,sc)},
+  board:function(t,sc){return Board(t,sc)},
+  rocks:function(t){return Rocks(t)},
+  rocktrack:function(t){return RockTrack(t)},
+  targets:function(t){return Targets(t)},
+  commits:function(t){return Commits(t)},
+  signoff:function(t){return Signoff(t)},
+  links:function(t){return Links(t)},
+  metrics:function(t){return Metrics(t)},
+  issues:function(t){return Issues(t)},
+  todos:function(t){return Todos(t)},
+  standup:function(t){return Standup(t)},
+  rating:function(t){return Rating(t)},
+  recap:function(t){return Recap(t)},
+  summary:function(t){return Summary(t)}
+};
+
+/* ============================ record export ============================ */
+function voteCount(id){return list('votes',function(v){return v.idea===id}).length}
+function dline(l){return l.filter(function(x){return x!==''&&x!=null}).join(' | ')}
+function toolRecord(t,sc,L){
+  switch(t.k){
+    case 'form':{
+      var f=F(t.id),any=false,rows=[];
+      t.rows.forEach(function(r){
+        if(r.type==='head'){rows.push('**'+r.label+'**');return}
+        if(r.type==='pair'){var v=f[r.k+'_v'],x=f[r.k+'_t'];if(v||x){any=true;rows.push('- '+r.label+': '+(v||'undecided')+(x?' | '+x:''))}return}
+        var val=txt(f[r.k]);if(val){any=true;rows.push('- '+r.label+': '+(r.type==='date'?fmtDate(val):val))}
+      });
+      if(any){L.push('#### '+t.title);rows.forEach(function(x){L.push(x)});L.push('')}break}
+    case 'wall':{
+      var items=list('ideas',function(i){return i.scene===sc.id+':'+t.id}).sort(byTs);
+      if(items.length){L.push('#### '+t.title);items.forEach(function(i){L.push('- '+(t.tags?'['+(t.tags[i.tag||0]||'')+'] ':'')+i.text+' ('+(i.who||'?')+') [votes '+voteCount(i.id)+']'+(t.extras||[]).map(function(x){return i[x.k]?' | '+x.label+': '+i[x.k]:''}).join(''))});L.push('')}break}
+    case 'board':{
+      var cs=list('cards',function(x){return x.scene===t.id}).sort(byTs);
+      if(cs.length){L.push('#### '+t.title);t.cols.forEach(function(c){var m=cs.filter(function(x){return x.col===c.k});if(m.length){L.push('- '+c.l+': '+m.map(function(x){return x.text}).join('; '))}});L.push('')}break}
+    case 'rocks':{
+      var rr=list('rocks',function(r){return r.scope===t.scope}).sort(byOrd);
+      if(rr.length){L.push('#### '+t.title);rr.forEach(function(r){L.push('- **'+r.title+'** ['+(r.status||'proposed')+'] Votes: '+voteCount(r.id)+' | Owner: '+(r.owner||'-')+' | Finish line: '+(r.finish||'-')+' | Leading indicator: '+(r.leading||'-')+' | Data source: '+(r.source||'-')+' | Tradeoff: '+(r.tradeoff||'-')+' | Check-in: '+(fmtDate(r.checkin)||'-')+' | Due: '+(fmtDate(r.due)||'-'))});L.push('')}break}
+    case 'rocktrack':{
+      var rt=list('rocks',function(r){return r.scope===t.id}).sort(byOrd);
+      if(rt.length){L.push('#### '+t.title);rt.forEach(function(r){L.push('- '+r.title+' | '+(r.track==='on'?'on track':(r.track==='off'?'off track':(r.track==='done'?'done':'not scored')))+' | Owner: '+(r.owner||'-')+' | Due: '+(fmtDate(r.due)||'-')+(r.note?' | '+r.note:''))});L.push('')}break}
+    case 'targets':{
+      var tg=list('targets',function(r){return r.scope===t.scope}).sort(byOrd);
+      if(tg.length){L.push('#### '+t.title);tg.forEach(function(x){L.push('- '+x.metric+': '+(txt(x.target)||'open')+(x.agreed?' (agreed)':'')+(x.rejected?' (skipped)':'')+' [votes '+voteCount(x.id)+']'+(x.note?' | '+x.note:'')+(x.ref?' | Ref: '+x.ref:''))});L.push('')}break}
+    case 'commits':{
+      var cm=list('commits',function(c){return (c.plan||t.id)===t.id});
+      if(cm.length){L.push('#### '+t.title);ROSTER.forEach(function(w){var m=cm.filter(function(c){return c.who===w}).sort(byTs);if(m.length){L.push('**'+w+'**');m.forEach(function(c){L.push('- '+(c.kind==='stop'?'[stop] ':'')+c.text+(c.kpi?' | KPI: '+c.kpi:'')+(c.support?' | Needs: '+c.support:'')+(c.checkin?' | Check-in: '+fmtDate(c.checkin):'')+(c.due?' | Due: '+fmtDate(c.due):''))})}});L.push('')}break}
+    case 'metrics':{
+      var mm=list('metrics',function(m){return m.scope===t.id}).sort(byOrd);
+      if(mm.length){L.push('#### '+t.title);mm.forEach(function(m){var s=metricState(m);L.push('- '+m.name+(m.type?' ['+m.type+']':'')+' | Goal '+(m.goal||'-')+' | Actual '+(m.value||'-')+' | Last '+(m.prev||'-')+(m.owner?' | Owner '+m.owner:'')+(s?' | '+(s==='on'?'on track':'off track'):''))});L.push('')}break}
+    case 'links':{
+      var lk=list('links');
+      if(lk.length){L.push('#### '+t.title);lk.forEach(function(x){var r=S.rocks[x.id];if(r)L.push('- '+r.title+' enables '+(x.priority==='none'?'none, conflict to resolve':((S.rocks[x.priority]||{}).title||'-'))+(x.move?' | First move: '+x.move:'')+(x.conflict?' | Conflict: '+x.conflict:''))});L.push('')}break}
+  }
+}
+function buildRecord(){
+  var dates=(ROOM.dates||[]).filter(Boolean).map(fmtDate).join(', ');
+  var L=['# '+ROOM.title,ROOM.tname+(dates?' · '+dates:'')+(ROOM.recurring?' · Session '+ROOM.sess:''),'','## Decision log',decisionsText(),''];
+  SCENES.forEach(function(sc){
+    var body=[];
+    sc.tools.forEach(function(t){toolRecord(t,sc,body)});
+    list('notes',function(n){return n.scene===sc.id}).sort(byTs).forEach(function(n){body.push('- Note ('+(n.who||'?')+'): '+n.text)});
+    if(body.length){L.push('## '+DAYS[sc.day].split(' · ')[0]+' · '+sc.title);body.forEach(function(x){L.push(x)});L.push('')}
+  });
+  var td=list('todos').sort(byTs);
+  if(td.length){L.push('## To-dos');td.forEach(function(t){L.push('- '+(t.status==='done'?'[done] ':(t.status==='missed'?'[not done] ':''))+t.text+' | Owner: '+(t.owner||'-')+' | Check-in: '+(fmtDate(t.checkin)||'-')+' | Due: '+(fmtDate(t.due)||'-')+(t.measure?' | Moves: '+t.measure:'')+(t.note?' | '+t.note:''))});L.push('')}
+  var is=list('issues').sort(byTs);
+  if(is.length){L.push('## Issues');is.forEach(function(i){L.push('- ['+(i.status||'open')+'] '+i.title+' [votes '+voteCount(i.id)+']'+(i.detail?' | '+i.detail:'')+(i.resolution?' | Decision: '+i.resolution:''))});L.push('')}
+  var up=list('updates').sort(byTs);
+  if(up.length){L.push('## Stand-up');up.forEach(function(u){L.push('- '+u.who+' | Finished: '+(u.yesterday||'-')+' | Today: '+(u.today||'-')+' | Blocked by: '+(u.blockers||'-'))});L.push('')}
+  var so=list('signoff',function(s){return s.ok}).sort(byTs);
+  if(so.length){L.push('## Sign-offs');so.forEach(function(s){L.push('- '+s.who+': '+(s.action||'-')+' | next check '+(fmtDate(s.check)||'-'))});L.push('')}
+  var rs=list('ratings',function(r){return +r.v>0});
+  if(rs.length){var a=rs.reduce(function(x,r){return x+(+r.v)},0)/rs.length;L.push('## Meeting rating','- Average '+a.toFixed(1)+' from '+rs.length+' ('+rs.map(function(r){return r.who+' '+r.v}).join(', ')+')','')}
+  var ideas=list('ideas',function(i){return !SCENE[i.scene.split(':')[0]]});
+  return L.join('\n');
+}
+
+/* ============================ first-visit tour for the room ============================
+   One tour for facilitators and one for participants. Each shows once per browser. The Tutorial button replays it.
+   Steps that point at a button the person does not have are dropped (opt:true). */
+function roomTourSteps(lead){
+  var pane=function(p){return function(){var a=$('#app');if(a&&a.dataset.pane!==p){a.dataset.pane=p;syncPanes()}}};
+  var s=[];
+  s.push({title:'Welcome to '+(ROOM.title||'the meeting'),body:[
+    'This page is the meeting. Everyone has the same page open, and what anyone types shows up for the others within a couple of seconds.',
+    lead?'You are the facilitator. This tour takes about a minute and covers what you can do that others cannot.':'This tour takes about a minute. You can replay it any time with the Tutorial button.']});
+  s.push({sel:'#agenda',before:pane('agenda'),title:'The agenda',body:[
+    'Each row is an agenda item with its start and end time. Click one to open it.',
+    lead?'When Leading the room is on, the item you open moves everyone who is following you.':'The item that is live shows a Live tag.',
+    'Under the agenda, What must leave the room ticks off as the room completes each required output. It is the quickest way to see what is still open.']});
+  s.push({sel:'#stage',before:pane('stage'),title:'The stage',body:[
+    'The highlighted card at the top is the one output this item must produce. Below it are short talking points and the working tools for the item.',
+    '- Type straight into any field. It saves as you type.',
+    '- Notes at the bottom of an item are for anything that does not fit a tool.',
+    '- Hover a long text box to read everything typed in it.']});
+  s.push({sel:'#whoWrap',opt:true,title:'Typing as',body:[
+    'Your name is already picked. If you are scribing for someone else in the room, change it before you type so their entries carry their name.',
+    'Agree, Question, and Push back next to it float up on everyone\'s screen without interrupting whoever is talking.']});
+  if(lead){
+    s.push({sel:'#followBtn',opt:true,title:'Leading the room',body:[
+      'When this is on, the item you open is the item everyone sees. Turn it off to look ahead or back without moving the room.']});
+  }else{
+    s.push({sel:'#followBtn',opt:true,title:'Following the presenter',body:[
+      'While this is on, your screen goes where the facilitator goes. Open any other item and it turns off so you can read ahead. Click it again to rejoin.']});
+  }
+  s.push({sel:'#logRail',before:pane('log'),title:'The decision log',body:[
+    'When the room decides something, log it here with an owner, a check-in date, and a due date. Tick it done when it is finished.']});
+  s.push({sel:'#themeBtn',before:pane('stage'),title:'Make it comfortable',body:[
+    '- Theme switches light, dark, and automatic, for you only.',
+    '- Large text helps when the page is on a shared screen.',
+    '- Focus hides the side panels so the item fills the screen.',
+    'Tutorial, right beside them, replays this tour any time.']});
+  s.push({sel:'#saveBtn',opt:true,title:'Save a record',body:[
+    'Save record gives you a file of everything entered in the room: decisions, numbers, commitments, and notes. Anyone can save one at any time.']});
+  if(lead){
+    s.push({sel:'#shareBtn',opt:true,title:ROOM.recurring?'Room code and next session':'Room code',body:[
+      'Room code copies the link and code for anyone who was not invited. They join by typing their name and are always participants. Personal links from the organizer are better because they show who is who.'].concat(ROOM.recurring?[
+      'When the meeting is over, click Next session twice. The record is saved and the room is ready for the next one.',
+      '- Open issues and unfinished to-dos carry over.',
+      '- Scorecard actuals move to Last.',
+      '- Everything else starts clear.']:[])});
+  }
+  return s;
+}
+function startRoomTour(force){
+  var lead=HOST.role==='lead';
+  return Tour.start({key:lead?'lead':'member',force:!!force,steps:roomTourSteps(lead),onEnd:function(){var a=$('#app');if(a&&a.dataset.pane!=='stage'){a.dataset.pane='stage';syncPanes()}}});
+}
+
+/* ============================ boot ============================ */
+function meetingUse(n){try{return Promise.resolve(window.meetingServices&&window.meetingServices.use?window.meetingServices.use(n):null).then(function(x){return x||null},function(){return null})}catch(e){return Promise.resolve(null)}}
+(function boot(){
+  var whoSel=$('#whoSel');
+  var typers=ROSTER.slice();if(HOST.who&&typers.indexOf(HOST.who)<0)typers.push(HOST.who);typers.push('Guest');
+  opts(whoSel,typers,me.who);whoSel.firstChild.textContent='Pick your name';
+  whoSel.addEventListener('change',function(){me.who=whoSel.value;try{localStorage.setItem(LS+'who',me.who)}catch(e){}$('#whoWrap').classList.remove('need');if(window.__room)window.__room.presence({who:me.who||null})});
+  $('#brandTitle').textContent=ROOM.title;
+  var d0=(ROOM.dates||[])[0];
+  $('#brandSub').textContent=ROOM.tname+(d0?' · '+dayLong(d0):'')+(ROOM.recurring?' · Session '+ROOM.sess:'')+(ROOM.org?' · '+ROOM.org:'');
+  try{document.title=ROOM.title}catch(e){}
+  $('#bigBtn').addEventListener('click',function(){var on_=document.documentElement.classList.toggle('big');this.setAttribute('aria-pressed',String(on_));try{localStorage.setItem(LS+'big',on_?'1':'')}catch(e){}});
+  $('#focusBtn').addEventListener('click',function(){var on_=$('#app').classList.toggle('focus');this.setAttribute('aria-pressed',String(on_))});
+  document.querySelectorAll('.panes .btn').forEach(function(b){b.addEventListener('click',function(){$('#app').dataset.pane=b.dataset.pane;syncPanes()})});
+  try{if(localStorage.getItem(LS+'big')){document.documentElement.classList.add('big');$('#bigBtn').setAttribute('aria-pressed','true')}}catch(e){}
+  (function(){var mode=ROOM.theme||'light',btn=$('#themeBtn'),root=document.documentElement;
+    try{mode=localStorage.getItem(LS+'theme')||mode}catch(e){}
+    function apply(){if(mode==='light'||mode==='dark')root.setAttribute('data-theme',mode);else root.removeAttribute('data-theme');btn.textContent='Theme: '+(mode==='auto'?'Auto':mode==='light'?'Light':'Dark')}
+    apply();
+    btn.addEventListener('click',function(){mode=mode==='light'?'dark':mode==='dark'?'auto':'light';try{localStorage.setItem(LS+'theme',mode)}catch(e){}apply()});
+  })();
+  renderAgenda();renderProg();renderLog();
+
+  window.__mrSess=function(s){ if(s&&s!==ROOM.sess&&!window.__reloading){window.__reloading=true;toast('A new session has started. Reloading...');setTimeout(function(){location.reload()},1200)} };
+
+  Promise.all(['db','user','room','downloads'].map(meetingUse)).then(function(r){
+    var dbx=r[0],userx=r[1],roomx=r[2],dl=r[3];
+    if(dbx){db=dbx}else{db=memoryDb();localOnly=true;$('#brandSub').textContent='Single-screen mode. Live sharing is not available in this view.'}
+    var chain=Promise.resolve();
+    if(userx){chain=Promise.all([userx.canEdit(),userx.can('data.write')]).then(function(v){isAdmin=!!v[0];leading=isAdmin;if(v[1]===false)canWrite=false}).catch(function(){})}
+    else if(localOnly){isAdmin=true;leading=false}
+    return chain.then(function(){
+      if(!canWrite)showBanner();
+      subscribe();
+      on(COLS,renderProg,true);
+      on(['decisions'],renderLog,true);
+      on(['live'],function(){
+        renderAgenda();
+        var st=S.live.state;
+        if(st&&st.scene&&!isAdmin&&follow&&st.scene!==cur&&SCENE[st.scene])go(st.scene,false);
+      },true);
+      var start=(location.hash||'').slice(1);
+      if(!SCENE[start])start=nowScene()||(SCENES[0]&&SCENES[0].id);
+      if(start)go(start,false);
+      renderFollow();
+      $('#helpBtn').addEventListener('click',function(){startRoomTour(true)});
+      setTimeout(function(){startRoomTour(false)},1200);
+      $('#followBtn').addEventListener('click',function(){
+        if(isAdmin){leading=!leading;renderFollow();if(leading&&canWrite&&cur)setDoc('live','state',{scene:cur,ts:Date.now()})}
+        else{follow=!follow;renderFollow();if(follow&&S.live.state&&SCENE[S.live.state.scene])go(S.live.state.scene,false)}
+      });
+      var fname=(slug(ROOM.title)+'-record.md').replace(/_/g,'-');
+      $('#saveBtn').hidden=false;
+      $('#saveBtn').addEventListener('click',function(){
+        var md=buildRecord();
+        if(dl){dl.save({filename:fname,data:md}).then(function(){toast('Record saved')}).catch(function(e){if(!e||e.code!=='declined')copyText(md)})}
+        else copyText(md,$('#saveBtn'));
+      });
+      if(HOST.role==='lead'&&ROOM.code){
+        var sb=$('#shareBtn');sb.hidden=false;
+        sb.addEventListener('click',function(ev){copyText('Join at '+location.origin+'/r/'+RID+' with the room code '+ROOM.code,sb);toast('Copied. Room code '+ROOM.code)});
+      }
+      if(HOST.role==='lead'&&ROOM.recurring&&window.__mr){
+        var nb=$('#nextBtn'),armed=false,t0;nb.hidden=false;
+        nb.addEventListener('click',function(){
+          if(!armed){armed=true;nb.textContent='Click again to end this session';clearTimeout(t0);t0=setTimeout(function(){armed=false;nb.textContent='Next session'},4000);return}
+          armed=false;nb.disabled=true;nb.textContent='Saving...';
+          window.__mr.post('/api/session',{a:'next',sess:ROOM.sess,record:buildRecord()}).then(function(){toast('Record saved. Starting the next session...');setTimeout(function(){location.reload()},900)}).catch(function(e){nb.disabled=false;nb.textContent='Next session';toast((e&&e.message)||'That did not work.')});
+        });
+      }
+      if(roomx){
+        window.__room=roomx;
+        roomx.presence({scene:cur,who:me.who||null}).catch(function(){});
+        roomx.onPeers(function(c){peersNow=c.peers.slice();renderHere();renderAgenda()},function(){});
+        roomx.on('react',function(m){float(m.data||{})},function(){});
+        document.querySelectorAll('#react').forEach(function(b){b.replaceChildren();buildReactions(b)});
+      }
+    });
+  });
+})();
+
+</script>
