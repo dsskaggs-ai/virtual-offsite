@@ -8,6 +8,8 @@ This edition includes seven meeting templates and all three visual themes. One d
 
 Free, open source, and [MIT licensed](LICENSE). You pay your own hosting, database, and optional email provider costs. This distribution contains no AI facilitator, model API calls, subscription billing, account signup, or hosted service administration.
 
+**Want a full demo or a hosted version?** Visit [virtualoffsite.com](https://virtualoffsite.com) to explore Virtual Offsite and learn about the hosted version, including the AI facilitator. You can also [try the interactive meeting-room demo](https://www.virtualoffsite.com/demo).
+
 ![Weekly leadership meeting in the Field theme](docs/images/field-light.png)
 
 ## What's included
