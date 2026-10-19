@@ -1,6 +1,7 @@
 # Virtual Offsite
 
 **Collaborative meeting rooms you can host for your own organization.**
+An open-source project from **[New Plains](https://newplains.dev)**. Explore more projects at [New Plains on GitHub](https://github.com/New-Plains-LLC).
 
 Pick an agenda, invite your people, and work together on one shared page. Everyone can add notes, ideas, votes, decisions, and actions while a human facilitator leads the meeting. Use your usual video call alongside it.
 
